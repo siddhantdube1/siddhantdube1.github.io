@@ -165,7 +165,7 @@ export default function BlogPostPage() {
             </div>
             <div>
               <p className="font-bold text-lg text-gray-900 dark:text-white">{post.author}</p>
-              <p className="text-gray-600 dark:text-gray-400">ML Engineer & AI Researcher</p>
+              <p className="text-gray-600 dark:text-gray-400">AI/ML Researcher</p>
             </div>
           </div>
         </div>

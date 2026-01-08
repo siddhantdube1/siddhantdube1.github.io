@@ -8,13 +8,23 @@ author: "Siddhant Dube"
 
 # Starting My PhD Journey in Legal AI
 
+<br>
+
 I am thrilled to announce that as of January 2026, I have officially begun my PhD journey in **Legal AI**. This transition marks a shift from my previous role as a **Senior ML Engineer at CVS Health** toward a deep academic dive into how complex legal systems can be enhanced—and safely integrated—with modern AI.
+
+<br>
 
 ---
 
+<br>
+
 ## 🔬 Research Focus & Methodology
 
+<br>
+
 My research is centered on building **socio-technical approaches** to Legal AI. Rather than looking at law as just a data processing problem, I am investigating how we can combine high-level reasoning with deep learning.
+
+<br>
 
 ### Core Research Pillars
 
@@ -25,9 +35,15 @@ My research is centered on building **socio-technical approaches** to Legal AI. 
 | **Neuro-Symbolic Architectures** | Blending the "intuition" of neural networks with the "logic" of symbolic reasoning. |
 | **Socio-Technical Lenses** | Evaluating the real-world impact of these systems on justice and equity. |
 
+<br>
+
 ---
 
+<br>
+
 ## ⚖️ Why the "Socio-Technical" Perspective?
+
+<br>
 
 In the legal domain, a "perfect" model is useless if it doesn't align with human values or the nuances of the courtroom. Legal AI isn't just a technical challenge—it's deeply intertwined with the fabric of society.
 
@@ -38,9 +54,15 @@ In the legal domain, a "perfect" model is useless if it doesn't align with human
 * **Social Justice:** Can AI reduce bias in legal precedents, or does it risk amplifying it?
 * **Ethical Guardrails:** Ensuring transparency in neuro-symbolic decision-making.
 
+<br>
+
 ---
 
+<br>
+
 ## 🚀 The Path Ahead
+
+<br>
 
 As I move from industry to academia, I look forward to bridging the gap between **scalable engineering** and **rigorous theoretical research**. I'll be sharing my findings, papers, and roadblocks here as I navigate this four-year journey.
 

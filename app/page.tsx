@@ -532,10 +532,10 @@ export default function Portfolio() {
                 Siddhant Dube
               </h1>
               <p className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                PhD Candidate & AI/ML Researcher
+                AI/ML Researcher
               </p>
               <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
-                <span className="font-semibold text-purple-600 dark:text-purple-400">PhD Candidate in Legal AI</span> | 
+                <span className="font-semibold text-purple-600 dark:text-purple-400">PhD Candidate in AI</span> | 
                 Researching socio-technical AI systems, GNNs, LLMs & neuro-symbolic architectures | 
                 Former Senior ML Engineer at CVS Health
               </p>
