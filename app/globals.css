@@ -24,3 +24,26 @@
   }
 }
 
+/* Blog post spacing */
+.prose p {
+  margin-bottom: 1.5rem !important;
+}
+
+.prose h2 {
+  margin-top: 3rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.prose h3 {
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.prose ul {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.prose li {
+  margin-bottom: 0.5rem !important;
+}
