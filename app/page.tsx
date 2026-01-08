@@ -274,7 +274,7 @@ export default function Portfolio() {
       title: "Senior Machine Learning Engineer",
       company: "CVS Health",
       location: "Cambridge, MA",
-      period: "Sep 2024 – Present",
+      period: "Sep 2024 – Jan 2026",
       icon: <Award className="w-6 h-6" />,
       highlights: [
         "Delivered real-time recommendations under 200ms with FastAPI microservice integrating geospatial queries and vector embeddings from MongoDB",
@@ -297,7 +297,7 @@ export default function Portfolio() {
       ]
     },
     {
-      title: "Software Engineer",
+      title: "Machine Learning Engineer",
       company: "Squark Inc.",
       location: "Boston, MA",
       period: "Feb 2023 – Nov 2023",
@@ -343,6 +343,14 @@ export default function Portfolio() {
 
   const projects: Project[] = [
     {
+      icon: "🎓",
+      title: "PhD Research: Socio-Technical Legal AI",
+      description: "Investigating how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can enhance legal reasoning while considering socio-technical dimensions and human-centered design principles.",
+      tags: ["PhD Research", "Legal AI", "GNNs", "LLMs", "Neuro-Symbolic", "Socio-Technical"],
+      gradient: "from-purple-500 via-indigo-600 to-blue-700",
+      metrics: "Started January 2026"
+    },
+    {
       icon: "🏥",
       title: "Real-Time Healthcare Recommendations",
       description: "Built FastAPI microservice delivering sub-200ms recommendations using geospatial queries, vector embeddings, and GPU-accelerated feature engineering for CVS Health's provider matching system.",
@@ -382,22 +390,14 @@ export default function Portfolio() {
       gradient: "from-green-500 via-emerald-600 to-teal-600",
       metrics: "60+ participants, 17 teams"
     },
-    {
-      icon: "🔮",
-      title: "Upcoming: Legal AI Research",
-      description: "Starting PhD research in Legal AI focusing on reasoning and neuro-symbolic architectures. Exploring how advanced AI systems can understand and process complex legal information and regulations.",
-      tags: ["PhD Research", "Legal AI", "Reasoning Systems", "Neuro-Symbolic AI"],
-      gradient: "from-indigo-500 via-purple-600 to-purple-700",
-      metrics: "Research phase"
-    }
   ]
 
   const stats: Stat[] = [
-    { number: "6+", label: "Years Experience", description: "In ML & Software Engineering" },
-    { number: "100TB+", label: "Data Processed", description: "Production ML Systems" },
-    { number: "200ms", label: "Real-time Response", description: "Sub-second Recommendations" },
-    { number: "99.9%", label: "System Availability", description: "High-Performance Systems" }
-  ]
+  { number: "6+", label: "Years Experience", description: "In ML & Software Engineering" },
+  { number: "2025", label: "PhD Started", description: "Legal AI Research" },
+  { number: "3", label: "Research Areas", description: "GNNs, LLMs, Neuro-Symbolic" },
+  { number: "100TB+", label: "Data Processed", description: "In Previous Roles" }
+]
 
   const navLinks = ['About', 'Experience', 'Skills', 'Projects', 'Contact', 'Blog']
 
@@ -532,12 +532,12 @@ export default function Portfolio() {
                 Siddhant Dube
               </h1>
               <p className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Senior Machine Learning Engineer & AI Researcher
+                PhD Candidate & AI/ML Researcher
               </p>
               <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
-                Building intelligent systems at <span className="font-semibold text-blue-600 dark:text-blue-400">CVS Health</span> | 
-                Incoming <span className="font-semibold text-purple-600 dark:text-purple-400">PhD Student in Legal AI</span> | 
-                Specializing in ML Systems, NLP & Scalable AI
+                <span className="font-semibold text-purple-600 dark:text-purple-400">PhD Candidate in Legal AI</span> | 
+                Researching socio-technical AI systems, GNNs, LLMs & neuro-symbolic architectures | 
+                Former Senior ML Engineer at CVS Health
               </p>
             </div>
 
@@ -580,16 +580,16 @@ export default function Portfolio() {
           <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-start">
             <div className="space-y-6 text-gray-600 dark:text-gray-400 text-base md:text-lg leading-relaxed">
               <p className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
-                I&apos;m a Senior Machine Learning Engineer at CVS Health, where I develop high-performance AI systems that deliver real-time recommendations and improve healthcare outcomes for millions of members.
+                I&apos;m a PhD student researching Legal AI with a focus on socio-technical systems, where I explore how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can transform legal reasoning and decision-making.
               </p>
               <p>
                 With a <span className="font-semibold text-gray-800 dark:text-gray-200">Master&apos;s in Data Analytics Engineering from Northeastern University</span> and extensive experience across healthcare, enterprise SaaS, and analytics platforms, I specialize in building scalable ML systems using cutting-edge technologies like GPU-accelerated computing, distributed systems, and modern cloud architectures.
               </p>
               <p>
-                I&apos;m passionate about pushing the boundaries of AI, particularly in areas involving <span className="font-semibold text-blue-600 dark:text-blue-400">reasoning and neuro-symbolic architectures</span>. Starting soon, I&apos;ll be pursuing my PhD in Legal AI, where I&apos;ll explore how advanced reasoning systems can transform the legal domain.
+                My research combines technical AI innovation with socio-technical perspectives, examining how <span className="font-semibold text-blue-600 dark:text-blue-400">GNNs, LLMs, and neuro-symbolic architectures</span> can address complex legal challenges while considering their broader societal impacts and human-centered design.
               </p>
               <p>
-                Beyond engineering, I&apos;ve led hackathons, mentored 100+ students, and contributed to MIT-backed startups, always seeking to make AI more impactful and accessible.
+                Before starting my PhD in January 2026, I was a Senior ML Engineer at CVS Health, where I built production AI systems. I&apos;ve also led hackathons, mentored 100+ students, and contributed to MIT-backed startups, always seeking to make AI more impactful and accessible.
               </p>
 
               <div className="pt-4">
@@ -597,7 +597,7 @@ export default function Portfolio() {
                 <div className="space-y-3">
                   <div className="border-l-4 border-blue-600 dark:border-blue-400 pl-4">
                     <p className="font-semibold text-gray-900 dark:text-white">Northeastern University</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">M.S. Data Analytics Engineering (GPA: 3.76/4.0)</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">M.S. Data Analytics Engineering (GPA: 3.76/4.00)</p>
                     <p className="text-sm text-gray-500 dark:text-gray-500">Boston, MA | 2021 - 2022</p>
                   </div>
                   <div className="border-l-4 border-purple-600 dark:border-purple-400 pl-4">
@@ -828,7 +828,7 @@ export default function Portfolio() {
           <div className="text-center space-y-4">
             <p className="text-lg font-semibold">Siddhant Dube</p>
             <p className="text-gray-400 text-sm">
-              Senior Machine Learning Engineer | AI Researcher | Incoming PhD Student
+              AI/ML Researcher | PhD Candidate
             </p>
             <div className="flex justify-center gap-6 pt-4">
               <a href="https://github.com/imsid22" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
@@ -842,7 +842,7 @@ export default function Portfolio() {
               </a>
             </div>
             <p className="text-gray-500 text-sm pt-6">
-              © 2025 Siddhant Dube. Built with Next.js, Tailwind CSS, and passion for AI.
+              © 2025 Siddhant Dube. All rights reserved.
             </p>
           </div>
         </div>
