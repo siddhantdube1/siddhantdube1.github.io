@@ -32,11 +32,25 @@
 .prose h2 {
   margin-top: 3rem !important;
   margin-bottom: 1.5rem !important;
+  font-size: 1.875rem !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.dark .prose h2 {
+  color: #ffffff !important;
 }
 
 .prose h3 {
   margin-top: 2rem !important;
   margin-bottom: 1rem !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+}
+
+.dark .prose h3 {
+  color: #e5e7eb !important;
 }
 
 .prose ul {
@@ -46,4 +60,18 @@
 
 .prose li {
   margin-bottom: 0.5rem !important;
+}
+
+.prose strong {
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.dark .prose strong {
+  color: #ffffff !important;
+}
+
+.prose hr {
+  margin-top: 3rem !important;
+  margin-bottom: 3rem !important;
 }

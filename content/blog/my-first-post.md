@@ -6,8 +6,6 @@ tags: ["Legal AI", "PhD", "Research", "GNNs", "LLMs", "Neuro-Symbolic", "Socio-T
 author: "Siddhant Dube"
 ---
 
-# Starting My PhD Journey in Legal AI
-
 I am thrilled to announce that as of January 2026, I have officially begun my PhD journey in **Legal AI**. This transition marks a shift from my previous role as a Senior ML Engineer at CVS Health toward a deep academic dive into how complex legal systems can be enhanced—and safely integrated—with modern AI.
 
 ## 🔬 Research Focus & Methodology
