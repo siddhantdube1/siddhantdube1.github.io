@@ -6,7 +6,7 @@ tags: ["Legal AI", "PhD", "Research", "GNNs", "LLMs", "Neuro-Symbolic", "Socio-T
 author: "Siddhant Dube"
 ---
 
-I am thrilled to announce that as of January 2026, I have officially begun my PhD journey in **Legal AI**. This transition marks a shift from my previous role as a Senior ML Engineer at CVS Health toward a deep academic dive into how complex legal systems can be enhanced—and safely integrated—with modern AI.
+I am thrilled to announce that as of January 2026, I have officially begun my PhD journey in **Legal AI**. This transition marks a shift from my previous role as a Senior ML Engineer at CVS Health toward a deep academic dive into how complex legal systems can be enhanced and safely integrated with modern AI.
 
 ## 🔬 Research Focus & Methodology
 
@@ -40,7 +40,7 @@ Designing human-centered AI systems for legal practice.
 
 ## Why Socio-Technical?
 
-Legal AI isn't just a technical challenge—it's deeply intertwined with:
+Legal AI isn't just a technical challenge, it's deeply intertwined with:
 
 - Human decision-making processes in legal contexts
 - Social justice and equity considerations
