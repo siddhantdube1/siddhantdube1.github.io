@@ -394,7 +394,7 @@ export default function Portfolio() {
 
   const stats: Stat[] = [
   { number: "6+", label: "Years Experience", description: "In ML & Software Engineering" },
-  { number: "2025", label: "PhD Started", description: "Legal AI Research" },
+  { number: "2026", label: "PhD Started", description: "Legal AI Research" },
   { number: "3", label: "Research Areas", description: "GNNs, LLMs, Neuro-Symbolic" },
   { number: "100TB+", label: "Data Processed", description: "In Previous Roles" }
 ]
