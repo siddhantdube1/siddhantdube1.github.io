@@ -793,7 +793,7 @@ export default function Portfolio() {
               <span>LinkedIn</span>
             </a>
             <a
-              href="https://github.com/imsid22"
+              href="https://github.com/siddhantdube1"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-bold hover:from-gray-900 hover:to-black hover:shadow-2xl transition-all transform hover:-translate-y-1"
@@ -802,7 +802,7 @@ export default function Portfolio() {
               <span>GitHub</span>
             </a>
             <a
-              href="tel:+17209385780"
+              href="tel:+601159402122"
               className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:from-green-700 hover:to-green-800 hover:shadow-2xl transition-all transform hover:-translate-y-1"
             >
               <Phone size={22} />
