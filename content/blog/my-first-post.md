@@ -19,29 +19,35 @@ My research is centered on building **socio-technical approaches** to Legal AI. 
 ### Technology
 
 **Graph Neural Networks (GNNs)**
-- Representing intricate legal knowledge graphs and precedent relationships
+
+Representing intricate legal knowledge graphs and precedent relationships.
 
 **Large Language Models (LLMs)**
-- Parsing, summarizing, and generating complex legal discourse
+
+Parsing, summarizing, and generating complex legal discourse.
 
 **Neuro-Symbolic Architectures**
-- Blending the "intuition" of neural networks with the "logic" of symbolic reasoning
+
+Blending the "intuition" of neural networks with the "logic" of symbolic reasoning.
 
 ### Application in Law
 
 **Socio-Technical Perspectives**
-- Understanding how AI systems interact with legal professionals, institutions, and society
-- Examining the social, ethical, and practical implications of AI in law
-- Designing human-centered AI systems for legal practice
+
+Understanding how AI systems interact with legal professionals, institutions, and society.
+
+Examining the social, ethical, and practical implications of AI in law.
+
+Designing human-centered AI systems for legal practice.
 
 ## Why Socio-Technical?
 
 Legal AI isn't just a technical challenge—it's deeply intertwined with:
 
-- **Human decision-making processes** in legal contexts
-- **Social justice and equity** considerations
-- **Professional practices** and how lawyers work
-- **Ethical and societal implications** of AI-assisted legal systems
+- Human decision-making processes in legal contexts
+- Social justice and equity considerations
+- Professional practices and how lawyers work
+- Ethical and societal implications of AI-assisted legal systems
 
 ## What's Next?
 
