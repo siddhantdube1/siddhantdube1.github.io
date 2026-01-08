@@ -27,8 +27,8 @@ export async function POST(request: Request) {
     // Send email using Resend
     const data = await resend.emails.send({
       from: 'Portfolio Contact <onboarding@resend.dev>', // Use your verified domain later
-      to: 'siddhantdube1@gmail.com', // Your email
-      replyTo: email, // User's email for easy reply
+      to: 'siddhantdube1@gmail.com',
+      replyTo: email, // User's email
       subject: `Portfolio Contact: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
