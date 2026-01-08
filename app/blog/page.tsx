@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Calendar, Clock, Tag, ArrowLeft } from 'lucide-react'
+import { Calendar, Search, Clock, Tag, ArrowLeft } from 'lucide-react'
 
 interface BlogPost {
   slug: string
