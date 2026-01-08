@@ -143,15 +143,19 @@ export default function BlogPostPage() {
 
         {/* Post Content */}
         <div className="prose prose-lg dark:prose-invert prose-blue max-w-none
-                        prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
-                        prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
+                        prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white prose-headings:mt-8 prose-headings:mb-4
+                        prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
+                        prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
+                        prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-p:mb-6
                         prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-gray-900 dark:prose-strong:text-white
-                        prose-code:text-blue-600 dark:prose-code:text-blue-400 prose-code:bg-blue-50 dark:prose-code:bg-blue-900/30 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:text-gray-100
-                        prose-blockquote:border-l-blue-600 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20 prose-blockquote:py-1 prose-blockquote:px-4
-                        prose-img:rounded-xl prose-img:shadow-lg
-                        prose-hr:border-gray-300 dark:prose-hr:border-gray-700">
+                        prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold
+                        prose-ul:my-6 prose-ul:space-y-2
+                        prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:leading-relaxed
+                        prose-code:text-blue-600 dark:prose-code:text-blue-400 prose-code:bg-blue-50 dark:prose-code:bg-blue-900/30 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                        prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:my-6
+                        prose-blockquote:border-l-blue-600 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:my-6
+                        prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8
+                        prose-hr:border-gray-300 dark:prose-hr:border-gray-700 prose-hr:my-12">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {post.content}
           </ReactMarkdown>
@@ -165,7 +169,7 @@ export default function BlogPostPage() {
             </div>
             <div>
               <p className="font-bold text-lg text-gray-900 dark:text-white">{post.author}</p>
-              <p className="text-gray-600 dark:text-gray-400">AI/ML Researcher</p>
+              <p className="text-gray-600 dark:text-gray-400">ML Engineer & AI Researcher</p>
             </div>
           </div>
         </div>
