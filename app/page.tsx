@@ -522,8 +522,12 @@ export default function Portfolio() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center space-y-6 md:space-y-8 animate-fade-in">
             <div className="inline-block">
-              <div className="w-28 h-28 md:w-36 md:h-36 mx-auto bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-full flex items-center justify-center text-5xl md:text-7xl shadow-2xl animate-bounce border-4 border-white">
-                👨‍💻
+              <div className="w-28 h-28 md:w-36 md:h-36 mx-auto rounded-full overflow-hidden border-4 border-white shadow-2xl">
+                <img 
+                  src="/Profile.jpg" 
+                  alt="Siddhant Dube" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
             

@@ -165,7 +165,11 @@ export default function BlogPostPage() {
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-3xl">
-              👨‍💻
+                <img 
+                  src="/Profile.jpg" 
+                  alt="Siddhant Dube" 
+                  className="w-full h-full object-cover"
+                />
             </div>
             <div>
               <p className="font-bold text-lg text-gray-900 dark:text-white">{post.author}</p>
