@@ -413,9 +413,11 @@ export default function Portfolio() {
           <div className="flex justify-between items-center h-16">
             <button
               onClick={() => scrollToSection('home')}
-              className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all"
+              className="text-2xl md:text-3xl font-extrabold tracking-tight"
             >
-              Siddhant Dube
+              <span className="inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-110">
+                SD
+              </span>
             </button>
             
             {/* Desktop Navigation */}
@@ -553,7 +555,7 @@ export default function Portfolio() {
                 Get In Touch
               </button>
               <a
-                href="https://github.com/imsid22"
+                href="https://github.com/siddhantdube1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all inline-flex items-center justify-center gap-2"
@@ -835,7 +837,7 @@ export default function Portfolio() {
               AI/ML Researcher | PhD Candidate
             </p>
             <div className="flex justify-center gap-6 pt-4">
-              <a href="https://github.com/imsid22" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
+              <a href="https://github.com/siddhantdube1" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
                 <Github size={24} />
               </a>
               <a href="https://linkedin.com/in/siddhantdube" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
