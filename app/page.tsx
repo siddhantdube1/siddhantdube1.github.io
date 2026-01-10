@@ -848,7 +848,7 @@ export default function Portfolio() {
               </a>
             </div>
             <p className="text-gray-500 text-sm pt-6">
-              © 2025 Siddhant Dube. All rights reserved.
+              © 2026 Siddhant Dube. All rights reserved.
             </p>
           </div>
         </div>
