@@ -13,6 +13,35 @@ const KL_LON_DEG  = 101.687
 // Earth sidereal day: 86164.1 seconds → radians/second
 const EARTH_RAD_PER_SEC = (2 * Math.PI) / 86164.1
 
+// ─── Theme color palettes ─────────────────────────────────────────────────────
+
+interface EarthColors {
+  sphereFill:       string
+  sphereOpacity:    number
+  wire:             string
+  wireOpacity:      number
+  marker:           string  // KL pulse + ISS marker
+}
+
+function earthColors(theme: 'dark' | 'light'): EarthColors {
+  if (theme === 'light') {
+    return {
+      sphereFill:    '#ebe1cf',  // --bg-elevated parchment
+      sphereOpacity: 1.0,
+      wire:          '#b8860b',  // --instrument copper/brass
+      wireOpacity:   0.5,
+      marker:        '#c2410c',  // --critical rust orange
+    }
+  }
+  return {
+    sphereFill:    '#04060d',  // --bg void
+    sphereOpacity: 0.85,
+    wire:          '#38bdf8',  // --instrument cyan
+    wireOpacity:   0.55,
+    marker:        '#fbbf24',  // --warning amber
+  }
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function latLonToVec3(lat: number, lon: number, r: number): THREE.Vector3 {
@@ -32,7 +61,7 @@ function issLatLonToVec3(lat: number, lon: number): THREE.Vector3 {
 
 // ─── Wireframe Earth ─────────────────────────────────────────────────────────
 
-function EarthMesh() {
+function EarthMesh({ colors }: { colors: EarthColors }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const startTime = useRef(Date.now())
 
@@ -47,12 +76,10 @@ function EarthMesh() {
 
   return (
     <mesh ref={meshRef} geometry={geometry}>
-      {/* Transparent dark faces */}
-      <meshBasicMaterial color="#04060d" transparent opacity={0.85} side={THREE.FrontSide} />
-      {/* Wireframe overlay */}
+      <meshBasicMaterial color={colors.sphereFill} transparent opacity={colors.sphereOpacity} side={THREE.FrontSide} />
       <lineSegments>
         <edgesGeometry args={[geometry]} />
-        <lineBasicMaterial color="#38bdf8" transparent opacity={0.55} />
+        <lineBasicMaterial color={colors.wire} transparent opacity={colors.wireOpacity} />
       </lineSegments>
     </mesh>
   )
@@ -60,13 +87,12 @@ function EarthMesh() {
 
 // ─── KL ground marker ────────────────────────────────────────────────────────
 
-function KLMarker() {
+function KLMarker({ colors }: { colors: EarthColors }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const position = useMemo(() => latLonToVec3(KL_LAT_DEG, KL_LON_DEG, EARTH_RADIUS + 0.01), [])
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
-    // Pulse opacity
     const t = clock.getElapsedTime()
     const mat = meshRef.current.material as THREE.MeshBasicMaterial
     mat.opacity = 0.5 + 0.5 * Math.sin(t * 3)
@@ -75,7 +101,7 @@ function KLMarker() {
   return (
     <mesh ref={meshRef} position={position}>
       <sphereGeometry args={[0.045, 8, 8]} />
-      <meshBasicMaterial color="#38bdf8" transparent opacity={1} />
+      <meshBasicMaterial color={colors.marker} transparent opacity={1} />
     </mesh>
   )
 }
@@ -85,9 +111,10 @@ function KLMarker() {
 interface ISSMarkerProps {
   lat: number
   lon: number
+  colors: EarthColors
 }
 
-function ISSMarker({ lat, lon }: ISSMarkerProps) {
+function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
   const meshRef = useRef<THREE.Mesh>(null)
   const targetPos = useMemo(() => issLatLonToVec3(lat, lon), [lat, lon])
 
@@ -100,7 +127,7 @@ function ISSMarker({ lat, lon }: ISSMarkerProps) {
   return (
     <mesh ref={meshRef} position={[targetPos.x, targetPos.y, targetPos.z]}>
       <boxGeometry args={[0.06, 0.06, 0.02]} />
-      <meshBasicMaterial color="#fbbf24" />
+      <meshBasicMaterial color={colors.marker} />
     </mesh>
   )
 }
@@ -110,23 +137,23 @@ function ISSMarker({ lat, lon }: ISSMarkerProps) {
 interface SceneProps {
   issLat: number
   issLon: number
+  colors: EarthColors
 }
 
-function Scene({ issLat, issLon }: SceneProps) {
+function Scene({ issLat, issLon, colors }: SceneProps) {
   return (
     <>
       <ambientLight intensity={0.2} />
-      <EarthMesh />
-      <KLMarker />
-      <ISSMarker lat={issLat} lon={issLon} />
+      <EarthMesh colors={colors} />
+      <KLMarker colors={colors} />
+      <ISSMarker lat={issLat} lon={issLon} colors={colors} />
     </>
   )
 }
 
 // ─── Static SVG fallback (mobile / reduced-motion) ───────────────────────────
 
-function EarthFallback({ issLat, issLon }: { issLat: number; issLon: number }) {
-  // Simple equirectangular SVG representation
+function EarthFallback({ issLat, issLon, colors }: { issLat: number; issLon: number; colors: EarthColors }) {
   const klX = ((KL_LON_DEG + 180) / 360) * 300
   const klY = ((90 - KL_LAT_DEG) / 180) * 150
   const issX = ((issLon + 180) / 360) * 300
@@ -139,20 +166,20 @@ function EarthFallback({ issLat, issLon }: { issLat: number; issLon: number }) {
         aria-hidden="true"
         style={{ border: '1px solid var(--inert)', borderRadius: 4 }}
       >
-        <rect width="300" height="150" fill="#04060d" />
+        <rect width="300" height="150" fill={colors.sphereFill} />
         {/* Graticule lines */}
         {[30, 60, 90, 120, 150, 180, 210, 240, 270, 300].map(x => (
-          <line key={x} x1={x} y1={0} x2={x} y2={150} stroke="#1a2030" strokeWidth="0.5" />
+          <line key={x} x1={x} y1={0} x2={x} y2={150} stroke={colors.wire} strokeWidth="0.5" opacity={colors.wireOpacity} />
         ))}
         {[37.5, 75, 112.5].map(y => (
-          <line key={y} x1={0} y1={y} x2={300} y2={y} stroke="#1a2030" strokeWidth="0.5" />
+          <line key={y} x1={0} y1={y} x2={300} y2={y} stroke={colors.wire} strokeWidth="0.5" opacity={colors.wireOpacity} />
         ))}
         {/* KL marker */}
-        <circle cx={klX} cy={klY} r={4} fill="#38bdf8" opacity={0.9} />
-        <text x={klX + 6} y={klY + 4} fill="#38bdf8" fontSize={7} fontFamily="monospace">KL</text>
+        <circle cx={klX} cy={klY} r={4} fill={colors.marker} opacity={0.9} />
+        <text x={klX + 6} y={klY + 4} fill={colors.marker} fontSize={7} fontFamily="monospace">KL</text>
         {/* ISS marker */}
-        <rect x={issX - 4} y={issY - 4} width={8} height={8} fill="#fbbf24" opacity={0.9} />
-        <text x={issX + 6} y={issY + 4} fill="#fbbf24" fontSize={7} fontFamily="monospace">ISS</text>
+        <rect x={issX - 4} y={issY - 4} width={8} height={8} fill={colors.marker} opacity={0.9} />
+        <text x={issX + 6} y={issY + 4} fill={colors.marker} fontSize={7} fontFamily="monospace">ISS</text>
       </svg>
       <p className="font-mono-display text-[10px]" style={{ color: 'var(--ink-dim)' }}>[STATIC VIEW]</p>
     </div>
@@ -164,13 +191,16 @@ function EarthFallback({ issLat, issLon }: { issLat: number; issLon: number }) {
 interface EarthGlobeProps {
   issLat: number
   issLon: number
+  theme: 'dark' | 'light'
   reducedMotion?: boolean
   isMobile?: boolean
 }
 
-export function EarthGlobe({ issLat, issLon, reducedMotion, isMobile }: EarthGlobeProps) {
+export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: EarthGlobeProps) {
+  const colors = earthColors(theme)
+
   if (reducedMotion || isMobile) {
-    return <EarthFallback issLat={issLat} issLon={issLon} />
+    return <EarthFallback issLat={issLat} issLon={issLon} colors={colors} />
   }
 
   return (
@@ -183,7 +213,7 @@ export function EarthGlobe({ issLat, issLon, reducedMotion, isMobile }: EarthGlo
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >
-        <Scene issLat={issLat} issLon={issLon} />
+        <Scene issLat={issLat} issLon={issLon} colors={colors} />
       </Canvas>
     </div>
   )
