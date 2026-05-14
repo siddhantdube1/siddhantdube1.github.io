@@ -7,6 +7,8 @@ import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/Telem
 import { EarthGlobeWrapper } from './components/EarthGlobeWrapper'
 import { PulsarMap } from './components/PulsarMap'
 import { DownlinkGallery, type Photo } from './components/DownlinkGallery'
+import { BootSequence } from './components/BootSequence'
+import { PhilosophyCrossfade } from './components/PhilosophyCrossfade'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -358,6 +360,7 @@ const PAYLOADS = [
 
 export default function Portfolio() {
   const [mounted, setMounted] = useState(false)
+  const [bootDone, setBootDone] = useState(false)
   const [voyagerMET, setVoyagerMET] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const nextLaunch = useNextLaunch()
@@ -367,6 +370,24 @@ export default function Portfolio() {
 
   useEffect(() => {
     setMounted(true)
+
+    // Boot sequence: play once per session
+    const booted = sessionStorage.getItem('sd01-booted')
+    if (booted) setBootDone(true)
+
+    // Console easter egg (§8.2)
+    const ascii = `
+       /\\
+      /  \\
+     / SD \\      SD-01
+    /------\\     siddhantdube1.github.io
+   /        \\
+  /          \\   Try: signal()
+ /____________\\
+`
+    console.log('%c' + ascii, 'color:#38bdf8;font-family:monospace;font-size:11px')
+    ;(window as Window & { signal?: () => string }).signal = () =>
+      'In the long arc of cosmic time, hello. — SD'
 
     const tick = () => {
       const now = Date.now()
@@ -394,8 +415,19 @@ export default function Portfolio() {
 
   if (!mounted) return null
 
+  const handleBootDone = () => {
+    sessionStorage.setItem('sd01-booted', '1')
+    setBootDone(true)
+  }
+
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
+      {/* Boot sequence — once per session */}
+      {!bootDone && <BootSequence onDone={handleBootDone} />}
+
+      {/* Philosophy crossfades — scroll-triggered, pointer-events: none */}
+      <PhilosophyCrossfade />
+
       {/* Nav */}
       <NavBar />
 
