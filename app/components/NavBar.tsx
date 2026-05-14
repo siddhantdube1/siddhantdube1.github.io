@@ -74,6 +74,15 @@ export function NavBar() {
   }, [])
 
   return (
+    <>
+      {/* Skip to main content — visible on focus for keyboard users */}
+      <a
+        href="#ground"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:px-4 focus:py-2 focus:text-xs focus:font-mono-display focus:rounded"
+        style={{ background: 'var(--instrument)', color: 'var(--bg)' } as React.CSSProperties}
+      >
+        SKIP TO CONTENT
+      </a>
     <nav
       className="fixed top-0 left-0 right-0 z-50 border-b"
       style={{
@@ -175,5 +184,6 @@ export function NavBar() {
         </div>
       )}
     </nav>
+    </>
   )
 }

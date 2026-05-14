@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
 import { NavBar } from './components/NavBar'
 import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/TelemetryWidgets'
 import { EarthGlobeWrapper } from './components/EarthGlobeWrapper'
@@ -445,12 +446,13 @@ export default function Portfolio() {
               <p><span style={{ color: 'var(--ink)' }}>SECTOR </span>  KUALA LUMPUR, MY</p>
             </div>
             <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--inert)' }}>
-              <img
+              <Image
                 src="/Profile.jpg"
                 alt="Siddhant Dube"
                 width={80} height={80}
                 className="rounded-sm"
                 style={{ filter: 'grayscale(20%)' }}
+                priority
               />
             </div>
           </div>

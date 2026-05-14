@@ -16,9 +16,8 @@ export default function NotFound() {
         <div className="pt-4">
           <Link
             href="/"
-            className="inline-block border px-6 py-2 text-xs tracking-widest transition-colors duration-150"
+            className="inline-block border px-6 py-2 text-xs tracking-widest transition-colors duration-150 font-mono-display"
             style={{ borderColor: 'var(--instrument)', color: 'var(--instrument)' }}
-            onMouseEnter={undefined}
           >
             RETURN TO BASE
           </Link>
