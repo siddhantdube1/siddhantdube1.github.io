@@ -6,6 +6,7 @@ import { NavBar } from './components/NavBar'
 import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/TelemetryWidgets'
 import { EarthGlobeWrapper } from './components/EarthGlobeWrapper'
 import { PulsarMap } from './components/PulsarMap'
+import { DownlinkGallery, type Photo } from './components/DownlinkGallery'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -358,6 +359,7 @@ const PAYLOADS = [
 export default function Portfolio() {
   const [mounted, setMounted] = useState(false)
   const [voyagerMET, setVoyagerMET] = useState('')
+  const [photos, setPhotos] = useState<Photo[]>([])
   const nextLaunch = useNextLaunch()
 
   // Voyager 1 launch: 1977-09-05 12:56:00 UTC
@@ -381,6 +383,13 @@ export default function Portfolio() {
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/photography')
+      .then(r => r.json())
+      .then(data => setPhotos(data as Photo[]))
+      .catch(() => {})
   }, [])
 
   if (!mounted) return null
@@ -658,16 +667,7 @@ export default function Portfolio() {
       <section id="downlink" className="py-24 px-4 relative z-10" aria-label="Downlink">
         <div className="max-w-7xl mx-auto">
           <SectionHeading title="DOWNLINK" sub="// IMAGERY RECEIVED FROM SURFACE" />
-          <div
-            className="flex items-center justify-center rounded border"
-            style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)', minHeight: 280 }}
-          >
-            <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
-              <p>⬡</p>
-              <p className="mt-2">DOWNLINK GALLERY</p>
-              <p className="mt-1 text-[10px]">[PHOTOGRAPHY SECTION — PHASE 5]</p>
-            </div>
-          </div>
+          <DownlinkGallery photos={photos} />
         </div>
       </section>
 

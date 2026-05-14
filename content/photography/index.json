@@ -1,0 +1,35 @@
+[
+  {
+    "id": "img-001",
+    "src": "/photography/placeholder-1.jpg",
+    "title": "Cameron Highlands, MY",
+    "captured_at": "2023-08-14",
+    "location": { "lat": 4.470, "lon": 101.388, "name": "Cameron Highlands, Pahang" },
+    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "23mm", "aperture": "f/8", "shutter": "1/250s", "iso": 200 },
+    "caption": "Tea estate, morning. The clouds were lower than the road.",
+    "featured": true,
+    "panorama": false
+  },
+  {
+    "id": "img-002",
+    "src": "/photography/placeholder-2.jpg",
+    "title": "Batu Caves, MY",
+    "captured_at": "2023-05-22",
+    "location": { "lat": 3.237, "lon": 101.683, "name": "Batu Caves, Selangor" },
+    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "16mm", "aperture": "f/5.6", "shutter": "1/500s", "iso": 400 },
+    "caption": "The staircase before the crowds arrive.",
+    "featured": true,
+    "panorama": false
+  },
+  {
+    "id": "img-003",
+    "src": "/photography/placeholder-3.jpg",
+    "title": "Taman Negara, MY",
+    "captured_at": "2022-12-10",
+    "location": { "lat": 4.383, "lon": 102.433, "name": "Taman Negara, Pahang" },
+    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "35mm", "aperture": "f/4", "shutter": "1/60s", "iso": 1600 },
+    "caption": "Primary rainforest canopy at dusk. 130 million years old.",
+    "featured": false,
+    "panorama": false
+  }
+]
