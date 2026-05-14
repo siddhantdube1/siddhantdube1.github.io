@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
 import { NavBar } from './components/NavBar'
+import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/TelemetryWidgets'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -355,6 +356,7 @@ const PAYLOADS = [
 export default function Portfolio() {
   const [mounted, setMounted] = useState(false)
   const [voyagerMET, setVoyagerMET] = useState('')
+  const nextLaunch = useNextLaunch()
 
   // Voyager 1 launch: 1977-09-05 12:56:00 UTC
   const VOYAGER_LAUNCH = new Date('1977-09-05T12:56:00Z').getTime()
@@ -423,39 +425,9 @@ export default function Portfolio() {
             </div>
           </div>
 
-          {/* Right — telemetry stack */}
-          <div className="font-mono-display text-xs space-y-4 md:self-start md:pt-8" style={{ minWidth: 220 }}>
-            <p className="tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>TELEMETRY // LIVE</p>
-
-            {/* ISS position (static placeholder) */}
-            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
-              <p style={{ color: 'var(--ink-dim)' }}>ISS POSITION</p>
-              <p className="telemetry-live mt-1">LAT  —.—°  LON  —.—°</p>
-            </div>
-
-            {/* Moon phase (static placeholder) */}
-            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
-              <p style={{ color: 'var(--ink-dim)' }}>MOON PHASE</p>
-              <p className="telemetry-live mt-1">— · —%</p>
-            </div>
-
-            {/* APOD */}
-            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
-              <p style={{ color: 'var(--ink-dim)' }}>APOD</p>
-              <p className="telemetry-live mt-1">LOADING...</p>
-            </div>
-
-            {/* NEO count */}
-            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
-              <p style={{ color: 'var(--ink-dim)' }}>NEO PASSES TODAY</p>
-              <p className="telemetry-live mt-1">—</p>
-            </div>
-
-            {/* Voyager MET */}
-            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
-              <p style={{ color: 'var(--ink-dim)' }}>V1 · MET</p>
-              <p className="telemetry-live mt-1" aria-live="polite">{voyagerMET || '—'}</p>
-            </div>
+          {/* Right — live telemetry stack */}
+          <div className="md:self-start md:pt-8">
+            <HeroTelemetry voyagerMET={voyagerMET} />
           </div>
         </div>
 
@@ -464,7 +436,7 @@ export default function Portfolio() {
           className="border-t py-2 px-4 font-mono-display text-xs overflow-hidden"
           style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)', color: 'var(--ink-dim)' }}
         >
-          <BottomTicker voyagerMET={voyagerMET} />
+          <BottomTicker voyagerMET={voyagerMET} nextLaunch={nextLaunch} />
         </div>
       </section>
 
@@ -548,7 +520,14 @@ export default function Portfolio() {
       {/* ── MISSION LOG ───────────────────────────────────────────────────────── */}
       <section id="log" className="py-24 px-4 relative z-10" style={{ background: 'var(--bg-elevated)' }} aria-label="Mission Log">
         <div className="max-w-7xl mx-auto">
-          <SectionHeading title="MISSION LOG" sub="// FIVE LOGGED MISSIONS — MOST RECENT FIRST" />
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-12">
+            <div>
+              <h2 className="font-mono-display text-2xl md:text-3xl font-bold tracking-widest mb-1" style={{ color: 'var(--ink)' }}>MISSION LOG</h2>
+              <p className="font-mono-display text-xs tracking-widest" style={{ color: 'var(--ink-dim)' }}>// FIVE LOGGED MISSIONS — MOST RECENT FIRST</p>
+              <div className="mt-4 h-px" style={{ background: 'var(--inert)' }} />
+            </div>
+            <div className="pb-1"><SolarWindBadge /></div>
+          </div>
 
           <div className="space-y-6">
             {MISSIONS.map(mission => (
@@ -769,18 +748,25 @@ export default function Portfolio() {
 
 // ─── Bottom ticker ────────────────────────────────────────────────────────────
 
-function BottomTicker({ voyagerMET }: { voyagerMET: string }) {
+interface LaunchData { name: string; net: string; pad?: string; provider?: string }
+
+function BottomTicker({ voyagerMET, nextLaunch }: { voyagerMET: string; nextLaunch: LaunchData | null }) {
   const [mode, setMode] = useState(0)
 
-  useEffect(() => {
-    const id = setInterval(() => setMode(m => (m + 1) % 2), 8000)
-    return () => clearInterval(id)
-  }, [])
+  const launchLine = nextLaunch?.net
+    ? `NEXT LAUNCH — ${nextLaunch.name} · NET ${new Date(nextLaunch.net).toUTCString().slice(0, 22)} UTC`
+    : 'NEXT LAUNCH — ACQUIRING SIGNAL'
 
   const lines = [
-    `MISSION ELAPSED TIME (VOYAGER 1 SINCE 1977-09-05) — ${voyagerMET || '—'}`,
+    `V1 · MISSION ELAPSED TIME — ${voyagerMET || '—'}`,
+    launchLine,
     `GROUND STATION · SD-01 · SECTOR KUALA LUMPUR, MY · STATUS ACTIVE`,
   ]
+
+  useEffect(() => {
+    const id = setInterval(() => setMode(m => (m + 1) % lines.length), 8000)
+    return () => clearInterval(id)
+  }, [lines.length])
 
   return (
     <p className="tracking-widest truncate" style={{ color: 'var(--ink-dim)' }}>
