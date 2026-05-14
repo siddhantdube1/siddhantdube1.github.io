@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
 import { NavBar } from './components/NavBar'
 import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/TelemetryWidgets'
+import { EarthGlobeWrapper } from './components/EarthGlobeWrapper'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -412,18 +413,8 @@ export default function Portfolio() {
             </div>
           </div>
 
-          {/* Center — Earth canvas placeholder (Phase 3) */}
-          <div
-            className="flex items-center justify-center rounded"
-            style={{ border: '1px solid var(--inert)', minHeight: 320, background: 'var(--bg-elevated)' }}
-            aria-label="Earth globe — live render coming in Phase 3"
-          >
-            <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
-              <p>◎</p>
-              <p className="mt-2">EARTH · SD-01 GROUND TRACK</p>
-              <p className="mt-1 text-[10px]">[3D RENDER LOADING]</p>
-            </div>
-          </div>
+          {/* Center — 3D Earth with live ISS marker */}
+          <EarthGlobeWrapper />
 
           {/* Right — live telemetry stack */}
           <div className="md:self-start md:pt-8">
