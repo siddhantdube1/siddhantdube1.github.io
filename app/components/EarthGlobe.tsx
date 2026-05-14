@@ -2,6 +2,7 @@
 
 import { useRef, useMemo, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -12,6 +13,15 @@ const KL_LAT_DEG  = 3.139
 const KL_LON_DEG  = 101.687
 // Earth sidereal day: 86164.1 seconds → radians/second
 const EARTH_RAD_PER_SEC = (2 * Math.PI) / 86164.1
+// Resume sidereal auto-rotation this long after the user releases the drag.
+const INTERACTION_COOLDOWN_MS = 3000
+
+// ─── Shared interaction state ─────────────────────────────────────────────────
+
+interface InteractionState {
+  isInteracting: boolean
+  lastInteractionAt: number  // performance.now() timestamp; -Infinity = never
+}
 
 // ─── Theme color palettes ─────────────────────────────────────────────────────
 
@@ -67,17 +77,34 @@ function issLatLonToVec3(lat: number, lon: number): THREE.Vector3 {
 
 // ─── Wireframe Earth ─────────────────────────────────────────────────────────
 
-function EarthMesh({ colors }: { colors: EarthColors }) {
+function EarthMesh({
+  colors,
+  interactionRef,
+}: {
+  colors: EarthColors
+  interactionRef: React.MutableRefObject<InteractionState>
+}) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const startTime = useRef(Date.now())
-
-  // Low-poly icosphere → wireframe
   const geometry = useMemo(() => new THREE.IcosahedronGeometry(EARTH_RADIUS, 3), [])
+
+  // Accumulated rotation, advanced by delta-time only when auto-rotating.
+  // Switching from "elapsed*rate" to "accumulator + dt*rate" prevents a jump
+  // when resuming after a drag — paused frames don't add to the accumulator.
+  const rotationRef = useRef(0)
+  const lastFrameRef = useRef<number | null>(null)
 
   useFrame(() => {
     if (!meshRef.current) return
-    const elapsed = (Date.now() - startTime.current) / 1000
-    meshRef.current.rotation.y = elapsed * EARTH_RAD_PER_SEC
+    const now = performance.now()
+    const dt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
+    lastFrameRef.current = now
+
+    const { isInteracting, lastInteractionAt } = interactionRef.current
+    const idleMs = now - lastInteractionAt
+    const shouldAutoRotate = !isInteracting && idleMs > INTERACTION_COOLDOWN_MS
+
+    if (shouldAutoRotate) rotationRef.current += dt * EARTH_RAD_PER_SEC
+    meshRef.current.rotation.y = rotationRef.current
   })
 
   return (
@@ -151,15 +178,30 @@ interface SceneProps {
   issLat: number
   issLon: number
   colors: EarthColors
+  interactionRef: React.MutableRefObject<InteractionState>
 }
 
-function Scene({ issLat, issLon, colors }: SceneProps) {
+function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
   return (
     <>
       <ambientLight intensity={0.2} />
-      <EarthMesh colors={colors} />
+      <EarthMesh colors={colors} interactionRef={interactionRef} />
       <KLMarker colors={colors} />
       <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        enableDamping
+        dampingFactor={0.05}
+        rotateSpeed={0.5}
+        onStart={() => {
+          interactionRef.current.isInteracting = true
+        }}
+        onEnd={() => {
+          interactionRef.current.isInteracting = false
+          interactionRef.current.lastInteractionAt = performance.now()
+        }}
+      />
     </>
   )
 }
@@ -211,6 +253,12 @@ interface EarthGlobeProps {
 
 export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: EarthGlobeProps) {
   const colors = earthColors(theme)
+  // Created here so OrbitControls (in Scene) and EarthMesh share one source of truth.
+  // -Infinity puts the cooldown gate "infinitely far in the past" → auto-rotate from mount.
+  const interactionRef = useRef<InteractionState>({
+    isInteracting: false,
+    lastInteractionAt: -Infinity,
+  })
 
   if (reducedMotion || isMobile) {
     return <EarthFallback issLat={issLat} issLon={issLon} colors={colors} />
@@ -225,8 +273,9 @@ export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: E
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
+        tabIndex={-1}
       >
-        <Scene issLat={issLat} issLon={issLon} colors={colors} />
+        <Scene issLat={issLat} issLon={issLon} colors={colors} interactionRef={interactionRef} />
       </Canvas>
     </div>
   )
