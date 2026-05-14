@@ -95,7 +95,9 @@ function EarthMesh({ colors }: { colors: EarthColors }) {
 
 function KLMarker({ colors }: { colors: EarthColors }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const position = useMemo(() => latLonToVec3(KL_LAT_DEG, KL_LON_DEG, EARTH_RADIUS + 0.01), [])
+  // 1.015× radius lifts the marker clearly above the sphere surface so the
+  // opaque parchment faces (Daylight Recovery) cannot occlude it.
+  const position = useMemo(() => latLonToVec3(KL_LAT_DEG, KL_LON_DEG, EARTH_RADIUS * 1.015), [])
   const r = 0.045 * colors.markerScale
 
   useFrame(({ clock }) => {
@@ -108,7 +110,9 @@ function KLMarker({ colors }: { colors: EarthColors }) {
   return (
     <mesh ref={meshRef} position={position}>
       <sphereGeometry args={[r, 8, 8]} />
-      <meshBasicMaterial color={colors.klMarker} transparent opacity={1} />
+      {/* depthTest:false ensures the marker is always drawn over the sphere
+          regardless of render queue order — matches the schematic/instrument intent */}
+      <meshBasicMaterial color={colors.klMarker} transparent opacity={1} depthTest={false} />
     </mesh>
   )
 }
@@ -136,7 +140,7 @@ function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
   return (
     <mesh ref={meshRef} position={[targetPos.x, targetPos.y, targetPos.z]}>
       <boxGeometry args={[s, s, 0.02]} />
-      <meshBasicMaterial color={colors.issMarker} />
+      <meshBasicMaterial color={colors.issMarker} depthTest={false} />
     </mesh>
   )
 }
