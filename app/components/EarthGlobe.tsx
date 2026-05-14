@@ -20,7 +20,9 @@ interface EarthColors {
   sphereOpacity:    number
   wire:             string
   wireOpacity:      number
-  marker:           string  // KL pulse + ISS marker
+  klMarker:         string   // ground station — primary accent
+  issMarker:        string   // live tracking — visually distinct from KL
+  markerScale:      number   // 1.0 = default; bumped in light mode for visibility
 }
 
 function earthColors(theme: 'dark' | 'light'): EarthColors {
@@ -30,7 +32,9 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
       sphereOpacity: 1.0,
       wire:          '#b8860b',  // --instrument copper/brass
       wireOpacity:   0.5,
-      marker:        '#c2410c',  // --critical rust orange
+      klMarker:      '#b8860b',  // --instrument copper — matches accent system
+      issMarker:     '#b91c1c',  // brick red — distinct from KL, reads on parchment
+      markerScale:   1.2,        // slightly larger for visibility on light surface
     }
   }
   return {
@@ -38,7 +42,9 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
     sphereOpacity: 0.85,
     wire:          '#38bdf8',  // --instrument cyan
     wireOpacity:   0.55,
-    marker:        '#fbbf24',  // --warning amber
+    klMarker:      '#38bdf8',  // --instrument cyan — ground station
+    issMarker:     '#fbbf24',  // --warning amber — live tracking
+    markerScale:   1.0,
   }
 }
 
@@ -90,6 +96,7 @@ function EarthMesh({ colors }: { colors: EarthColors }) {
 function KLMarker({ colors }: { colors: EarthColors }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const position = useMemo(() => latLonToVec3(KL_LAT_DEG, KL_LON_DEG, EARTH_RADIUS + 0.01), [])
+  const r = 0.045 * colors.markerScale
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
@@ -100,8 +107,8 @@ function KLMarker({ colors }: { colors: EarthColors }) {
 
   return (
     <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[0.045, 8, 8]} />
-      <meshBasicMaterial color={colors.marker} transparent opacity={1} />
+      <sphereGeometry args={[r, 8, 8]} />
+      <meshBasicMaterial color={colors.klMarker} transparent opacity={1} />
     </mesh>
   )
 }
@@ -124,10 +131,12 @@ function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
     }
   }, [targetPos])
 
+  const s = 0.06 * colors.markerScale
+
   return (
     <mesh ref={meshRef} position={[targetPos.x, targetPos.y, targetPos.z]}>
-      <boxGeometry args={[0.06, 0.06, 0.02]} />
-      <meshBasicMaterial color={colors.marker} />
+      <boxGeometry args={[s, s, 0.02]} />
+      <meshBasicMaterial color={colors.issMarker} />
     </mesh>
   )
 }
@@ -175,11 +184,11 @@ function EarthFallback({ issLat, issLon, colors }: { issLat: number; issLon: num
           <line key={y} x1={0} y1={y} x2={300} y2={y} stroke={colors.wire} strokeWidth="0.5" opacity={colors.wireOpacity} />
         ))}
         {/* KL marker */}
-        <circle cx={klX} cy={klY} r={4} fill={colors.marker} opacity={0.9} />
-        <text x={klX + 6} y={klY + 4} fill={colors.marker} fontSize={7} fontFamily="monospace">KL</text>
+        <circle cx={klX} cy={klY} r={4 * colors.markerScale} fill={colors.klMarker} opacity={0.9} />
+        <text x={klX + 6} y={klY + 4} fill={colors.klMarker} fontSize={7} fontFamily="monospace">KL</text>
         {/* ISS marker */}
-        <rect x={issX - 4} y={issY - 4} width={8} height={8} fill={colors.marker} opacity={0.9} />
-        <text x={issX + 6} y={issY + 4} fill={colors.marker} fontSize={7} fontFamily="monospace">ISS</text>
+        <rect x={issX - 4 * colors.markerScale} y={issY - 4 * colors.markerScale} width={8 * colors.markerScale} height={8 * colors.markerScale} fill={colors.issMarker} opacity={0.9} />
+        <text x={issX + 6} y={issY + 4} fill={colors.issMarker} fontSize={7} fontFamily="monospace">ISS</text>
       </svg>
       <p className="font-mono-display text-[10px]" style={{ color: 'var(--ink-dim)' }}>[STATIC VIEW]</p>
     </div>
