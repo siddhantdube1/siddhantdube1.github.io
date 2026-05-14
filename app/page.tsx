@@ -5,6 +5,7 @@ import { Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
 import { NavBar } from './components/NavBar'
 import { HeroTelemetry, SolarWindBadge, useNextLaunch } from './components/TelemetryWidgets'
 import { EarthGlobeWrapper } from './components/EarthGlobeWrapper'
+import { PulsarMap } from './components/PulsarMap'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -437,19 +438,9 @@ export default function Portfolio() {
           <SectionHeading title="MANIFEST" sub="// IF FOUND DRIFTING, READ FIRST" />
 
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
-            {/* Left — pulsar map placeholder (Phase 4) */}
+            {/* Left — Voyager pulsar map */}
             <div className="flex flex-col items-center gap-4">
-              <div
-                className="w-full max-w-sm flex items-center justify-center rounded"
-                style={{ border: '1px solid var(--inert)', background: 'var(--bg-elevated)', aspectRatio: '1', minHeight: 280 }}
-                aria-label="Voyager pulsar map — rendered in Phase 4"
-              >
-                <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
-                  <p>⊕</p>
-                  <p className="mt-2">VOYAGER PULSAR MAP</p>
-                  <p className="mt-1 text-[10px]">[SVG RENDER — PHASE 4]</p>
-                </div>
-              </div>
+              <PulsarMap />
               <p className="font-serif-inscription italic text-sm text-center max-w-xs" style={{ color: 'var(--ink-dim)' }}>
                 &ldquo;If you find this drifting, here&apos;s where I am.&rdquo; — SD
               </p>
