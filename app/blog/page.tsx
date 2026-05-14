@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, Search, Clock, Tag, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Search } from 'lucide-react'
 
 interface BlogPost {
   slug: string
@@ -20,7 +20,6 @@ export default function BlogPage() {
   const [allTags, setAllTags] = useState<string[]>([])
 
   useEffect(() => {
-    // Fetch posts from API route
     fetch('/api/blog')
       .then(res => res.json())
       .then(data => {
@@ -31,146 +30,162 @@ export default function BlogPage() {
   }, [])
 
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesTag = !selectedTag || post.tags.includes(selectedTag)
     return matchesSearch && matchesTag
   })
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  const txNumber = (index: number) => `TX-${String(posts.length - index).padStart(3, '0')}`
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+    <div className="min-h-screen relative" style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
+      {/* Grid background already on body::before from globals.css */}
+
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link 
+      <header
+        className="sticky top-0 z-10 border-b"
+        style={{ background: 'var(--bg-elevated)', borderColor: 'var(--inert)' }}
+      >
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link
             href="/"
-            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mb-4"
+            className="flex items-center gap-2 font-mono-display text-xs tracking-widest transition-colors duration-150"
+            style={{ color: 'var(--ink-dim)' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--instrument)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--ink-dim)')}
           >
-            <ArrowLeft size={20} />
-            Back to Home
+            <ArrowLeft size={14} />
+            SD-01
           </Link>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-            Blog
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Thoughts on AI, machine learning, and my PhD journey in Legal AI
-          </p>
+          <span className="font-mono-display text-xs tracking-widest" style={{ color: 'var(--ink-dim)' }}>
+            TRANSMISSION LOG
+          </span>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Search and Filter */}
-        <div className="mb-12 space-y-6">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
-
-          {/* Tags Filter */}
-          {allTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedTag(null)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                  !selectedTag
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400'
-                }`}
-              >
-                All Posts
-              </button>
-              {allTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(tag)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                    selectedTag === tag
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          )}
+      <main className="max-w-4xl mx-auto px-4 py-12 relative z-10">
+        {/* Page heading */}
+        <div className="mb-10">
+          <h1 className="font-mono-display text-2xl md:text-3xl font-bold tracking-widest mb-1" style={{ color: 'var(--ink)' }}>
+            TRANSMISSION LOG
+          </h1>
+          <p className="font-mono-display text-xs tracking-widest" style={{ color: 'var(--ink-dim)' }}>
+            // DISPATCHES FROM THE FIELD
+          </p>
+          <div className="mt-4 h-px" style={{ background: 'var(--inert)' }} />
         </div>
 
-        {/* Blog Posts */}
+        {/* Search */}
+        <div className="mb-8">
+          <div className="relative">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{ color: 'var(--ink-dim)' }}
+            />
+            <input
+              type="text"
+              placeholder="SEARCH TRANSMISSIONS..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 font-mono-display text-xs border rounded transition-colors duration-150 focus:outline-none"
+              style={{
+                background: 'var(--bg-elevated)',
+                color: 'var(--ink)',
+                borderColor: 'var(--inert)',
+              }}
+              onFocus={e => ((e.currentTarget as HTMLInputElement).style.borderColor = 'var(--instrument)')}
+              onBlur={e => ((e.currentTarget as HTMLInputElement).style.borderColor = 'var(--inert)')}
+            />
+          </div>
+        </div>
+
+        {/* Tag filter */}
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button
+              onClick={() => setSelectedTag(null)}
+              className="font-mono-display text-[10px] px-3 py-1 border tracking-widest transition-colors duration-150"
+              style={{
+                borderColor: !selectedTag ? 'var(--instrument)' : 'var(--inert)',
+                color: !selectedTag ? 'var(--instrument)' : 'var(--ink-dim)',
+              }}
+            >
+              ALL
+            </button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
+                className="font-mono-display text-[10px] px-3 py-1 border tracking-widest transition-colors duration-150"
+                style={{
+                  borderColor: selectedTag === tag ? 'var(--instrument)' : 'var(--inert)',
+                  color: selectedTag === tag ? 'var(--instrument)' : 'var(--ink-dim)',
+                }}
+              >
+                {tag.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Post list */}
         {filteredPosts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              {posts.length === 0 ? 'No blog posts yet. Check back soon!' : 'No posts match your search.'}
-            </p>
+          <div className="py-16 text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
+            {posts.length === 0
+              ? '// NO TRANSMISSIONS YET — CHECK BACK SOON'
+              : '// NO MATCHES FOR THIS QUERY'}
           </div>
         ) : (
-          <div className="space-y-8">
-            {filteredPosts.map(post => (
+          <div className="space-y-0">
+            {filteredPosts.map((post, index) => (
               <article
                 key={post.slug}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-gray-100 dark:border-gray-700"
+                className="border-b py-5 group"
+                style={{ borderColor: 'var(--inert)' }}
               >
-                <Link href={`/blog/${post.slug}`}>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                    {post.title}
-                  </h2>
-                </Link>
-
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={16} />
-                    {formatDate(post.date)}
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
+                  <span
+                    className="font-mono-display text-xs flex-shrink-0 w-16"
+                    style={{ color: 'var(--instrument)' }}
+                  >
+                    {txNumber(index)}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={16} />
-                    {post.readTime}
+                  <span
+                    className="font-mono-display text-xs flex-shrink-0"
+                    style={{ color: 'var(--ink-dim)' }}
+                  >
+                    {post.date}
                   </span>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="font-bold transition-colors duration-150"
+                    style={{ color: 'var(--ink)' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--instrument)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--ink)')}
+                  >
+                    ▸ {post.title}
+                  </Link>
                 </div>
-
-                <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                  {post.excerpt}
-                </p>
-
-                {post.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {post.tags.map(tag => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium"
-                      >
-                        <Tag size={14} />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                {post.excerpt && (
+                  <p className="mt-2 text-sm leading-relaxed ml-0 sm:ml-[calc(64px+1.5rem+72px+1.5rem)]" style={{ color: 'var(--ink-dim)' }}>
+                    {post.excerpt}
+                  </p>
                 )}
-
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors"
-                >
-                  Read more →
-                </Link>
               </article>
             ))}
           </div>
         )}
       </main>
+
+      <footer
+        className="border-t py-6 px-4 text-center font-mono-display text-xs mt-12"
+        style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
+      >
+        <Link href="/" style={{ color: 'var(--ink-dim)' }}>← SD-01</Link>
+      </footer>
     </div>
   )
 }

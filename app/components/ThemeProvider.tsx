@@ -8,22 +8,22 @@ const ThemeContext = createContext<{
   theme: Theme
   toggleTheme: () => void
 }>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = useState<Theme>('dark')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('theme') as Theme
-    if (stored) {
+    const stored = localStorage.getItem('theme') as Theme | null
+    if (stored === 'light' || stored === 'dark') {
       setTheme(stored)
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark')
     }
+    // If nothing stored, the inline script in layout.tsx already applied dark;
+    // state default of 'dark' is correct.
   }, [])
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme, mounted])
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'))
   }
 
   if (!mounted) return null

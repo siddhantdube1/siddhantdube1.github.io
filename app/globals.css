@@ -148,7 +148,66 @@ body::before {
   }
 }
 
-/* ── Blog / prose ──────────────────────────────────────────────────────────── */
+/* ── Blog / prose (mission aesthetic) ─────────────────────────────────────── */
+.prose-mission {
+  color: var(--ink);
+  line-height: 1.8;
+  font-size: 1rem;
+}
+.prose-mission p { margin-bottom: 1.5rem; }
+.prose-mission h2 {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.prose-mission h3 {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.prose-mission ul { list-style: none; margin: 1.5rem 0; padding: 0; }
+.prose-mission ul li::before { content: '▸ '; color: var(--instrument); }
+.prose-mission li { margin-bottom: 0.5rem; }
+.prose-mission strong { font-weight: 700; color: var(--ink); }
+.prose-mission a { color: var(--instrument); text-decoration: none; }
+.prose-mission a:hover { text-decoration: underline; }
+.prose-mission code {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 0.85em;
+  color: var(--instrument);
+  background: var(--bg-elevated);
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+.prose-mission pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--inert);
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+.prose-mission pre code { background: none; padding: 0; }
+.prose-mission blockquote {
+  border-left: 2px solid var(--instrument);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--ink-dim);
+  font-style: italic;
+}
+.prose-mission hr {
+  border: none;
+  border-top: 1px solid var(--inert);
+  margin: 2.5rem 0;
+}
+
+/* ── Legacy blog / prose ───────────────────────────────────────────────────── */
 .prose p {
   margin-bottom: 1.5rem !important;
 }

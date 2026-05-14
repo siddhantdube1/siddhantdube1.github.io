@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Mono, Inter, Newsreader } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "./components/ThemeProvider";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -67,7 +68,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-prose antialiased">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

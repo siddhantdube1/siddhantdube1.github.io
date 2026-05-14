@@ -1,44 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Github, Linkedin, Mail, Phone, Menu, X, ChevronDown, ExternalLink, Award, Code, Database, Cloud, Moon, Sun, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import { NavBar } from './components/NavBar'
 
-interface Experience {
-  title: string
-  company: string
-  location: string
-  period: string
-  icon: React.ReactNode
-  highlights: string[]
-}
-
-interface Skill {
-  items: string[]
-  icon: React.ReactNode
-}
-
-interface Project {
-  icon: string
-  title: string
-  description: string
-  tags: string[]
-  gradient: string
-  metrics: string
-}
-
-interface Stat {
-  number: string
-  label: string
-  description: string
-}
+// ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
 function ContactForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  })
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -46,666 +15,619 @@ function ContactForm() {
     e.preventDefault()
     setStatus('loading')
     setErrorMessage('')
-
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send message')
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Failed to send message')
       setStatus('success')
       setFormData({ name: '', email: '', subject: '', message: '' })
-      
-      // Reset success message after 5 seconds
       setTimeout(() => setStatus('idle'), 5000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       setStatus('error')
-      setErrorMessage(error.message || 'Failed to send message. Please try again.')
-      
-      // Reset error message after 5 seconds
-      setTimeout(() => {
-        setStatus('idle')
-        setErrorMessage('')
-      }, 5000)
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
+      setTimeout(() => { setStatus('idle'); setErrorMessage('') }, 5000)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-6 md:p-8 shadow-lg border border-gray-100 dark:border-gray-700 mb-12">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Name *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Your name"
-              disabled={status === 'loading'}
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Email *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="your.email@example.com"
-              disabled={status === 'loading'}
-            />
-          </div>
-        </div>
+  const fieldClass = `w-full px-4 py-3 font-mono-display text-sm border rounded transition-colors duration-150
+    focus:outline-none focus:border-[var(--instrument)]`
 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Subject *
+          <label htmlFor="name" className="block font-mono-display text-xs tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>
+            OPERATOR ID *
           </label>
           <input
-            type="text"
-            id="subject"
-            name="subject"
-            value={formData.subject}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            placeholder="What would you like to discuss?"
-            disabled={status === 'loading'}
+            type="text" id="name" name="name" value={formData.name}
+            onChange={handleChange} required disabled={status === 'loading'}
+            className={fieldClass}
+            style={{ background: 'var(--bg-elevated)', color: 'var(--ink)', borderColor: 'var(--inert)' }}
+            placeholder="your name"
           />
         </div>
-
         <div>
-          <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Message *
+          <label htmlFor="email" className="block font-mono-display text-xs tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>
+            RETURN FREQUENCY *
           </label>
-          <textarea
-            id="message"
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            required
-            rows={6}
-            className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-            placeholder="Your message..."
-            disabled={status === 'loading'}
+          <input
+            type="email" id="email" name="email" value={formData.email}
+            onChange={handleChange} required disabled={status === 'loading'}
+            className={fieldClass}
+            style={{ background: 'var(--bg-elevated)', color: 'var(--ink)', borderColor: 'var(--inert)' }}
+            placeholder="your@email.com"
           />
         </div>
+      </div>
 
-        {/* Status Messages */}
-        {status === 'success' && (
-          <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-800 dark:text-green-400">
-            <CheckCircle size={20} />
-            <span className="font-medium">Message sent successfully! I&apos;ll get back to you soon.</span>
-          </div>
+      <div>
+        <label htmlFor="subject" className="block font-mono-display text-xs tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>
+          TRANSMISSION SUBJECT *
+        </label>
+        <input
+          type="text" id="subject" name="subject" value={formData.subject}
+          onChange={handleChange} required disabled={status === 'loading'}
+          className={fieldClass}
+          style={{ background: 'var(--bg-elevated)', color: 'var(--ink)', borderColor: 'var(--inert)' }}
+          placeholder="subject"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="message" className="block font-mono-display text-xs tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>
+          PAYLOAD *
+        </label>
+        <textarea
+          id="message" name="message" value={formData.message}
+          onChange={handleChange} required rows={6} disabled={status === 'loading'}
+          className={`${fieldClass} resize-none`}
+          style={{ background: 'var(--bg-elevated)', color: 'var(--ink)', borderColor: 'var(--inert)' }}
+          placeholder="your message..."
+        />
+      </div>
+
+      {status === 'success' && (
+        <div className="flex items-center gap-2 p-4 rounded border text-sm font-mono-display" style={{ color: 'var(--instrument)', borderColor: 'var(--instrument)', background: 'var(--bg-elevated)' }}>
+          <CheckCircle size={16} />
+          <span>TRANSMISSION RECEIVED — RESPONSE INCOMING.</span>
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="flex items-center gap-2 p-4 rounded border text-sm font-mono-display" style={{ color: 'var(--critical)', borderColor: 'var(--critical)', background: 'var(--bg-elevated)' }}>
+          <AlertCircle size={16} />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      <button
+        type="submit" disabled={status === 'loading'}
+        className="flex items-center justify-center gap-2 w-full py-3 border font-mono-display text-xs tracking-widest transition-colors duration-150 disabled:opacity-50"
+        style={{ borderColor: 'var(--instrument)', color: 'var(--instrument)', background: 'transparent' }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--instrument)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--bg)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--instrument)' }}
+      >
+        {status === 'loading' ? (
+          <><span className="blink">_</span> TRANSMITTING...</>
+        ) : (
+          <><Send size={14} /> TRANSMIT</>
         )}
+      </button>
+    </form>
+  )
+}
 
-        {status === 'error' && (
-          <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-400">
-            <AlertCircle size={20} />
-            <span className="font-medium">{errorMessage}</span>
-          </div>
-        )}
+// ─── Section heading component ─────────────────────────────────────────────────
 
-        <button
-          type="submit"
-          disabled={status === 'loading'}
-          className={`w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 ${
-            status === 'loading' ? 'animate-pulse' : ''
-          }`}
-        >
-          {status === 'loading' ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send size={20} />
-              Send Message
-            </>
-          )}
-        </button>
-      </form>
+function SectionHeading({ title, sub, id }: { title: string; sub: string; id?: string }) {
+  return (
+    <div className="mb-12" id={id}>
+      <h2 className="font-mono-display text-2xl md:text-3xl font-bold tracking-widest mb-1" style={{ color: 'var(--ink)' }}>
+        {title}
+      </h2>
+      <p className="font-mono-display text-xs tracking-widest" style={{ color: 'var(--ink-dim)' }}>
+        {sub}
+      </p>
+      <div className="mt-4 h-px" style={{ background: 'var(--inert)' }} />
     </div>
   )
 }
 
-export default function Portfolio() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState('home')
-  const [scrolled, setScrolled] = useState(false)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  const [mounted, setMounted] = useState(false)
+// ─── Social icons (thin-stroke inline SVG) ────────────────────────────────────
 
-  // Theme management
-  useEffect(() => {
-    setMounted(true)
-    const stored = localStorage.getItem('theme') as 'light' | 'dark'
-    if (stored) {
-      setTheme(stored)
-      if (stored === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark')
-      document.documentElement.classList.add('dark')
-    }
-  }, [])
+function LinkedinIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  )
+}
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
+function GithubIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+    </svg>
+  )
+}
 
-  // Scroll management
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-      
-      const sections = ['home', 'about', 'experience', 'skills', 'projects', 'contact']
-      const current = sections.find(section => {
-        const element = document.getElementById(section)
-        if (element) {
-          const rect = element.getBoundingClientRect()
-          return rect.top <= 150 && rect.bottom >= 150
-        }
-        return false
-      })
-      if (current) setActiveSection(current)
-    }
+// ─── Mission patch SVGs (geometric placeholders per §8.5) ─────────────────────
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+function PatchCircleHex() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--instrument)" strokeWidth="1.2" aria-hidden="true">
+      <polygon points="28,4 50,16 50,40 28,52 6,40 6,16" />
+      <circle cx="28" cy="28" r="12" />
+    </svg>
+  )
+}
+function PatchGraph() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--instrument)" strokeWidth="1.2" aria-hidden="true">
+      <circle cx="28" cy="28" r="24" />
+      <circle cx="28" cy="18" r="4" />
+      <circle cx="18" cy="34" r="4" />
+      <circle cx="38" cy="34" r="4" />
+      <line x1="28" y1="22" x2="20" y2="32" />
+      <line x1="28" y1="22" x2="36" y2="32" />
+      <line x1="20" y1="36" x2="36" y2="36" />
+    </svg>
+  )
+}
+function PatchTriangle() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--instrument)" strokeWidth="1.2" aria-hidden="true">
+      <circle cx="28" cy="28" r="24" />
+      <polygon points="28,12 44,42 12,42" />
+    </svg>
+  )
+}
+function PatchDiamond() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--instrument)" strokeWidth="1.2" aria-hidden="true">
+      <circle cx="28" cy="28" r="24" />
+      <polygon points="28,10 46,28 28,46 10,28" />
+    </svg>
+  )
+}
+function PatchSquare() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--instrument)" strokeWidth="1.2" aria-hidden="true">
+      <circle cx="28" cy="28" r="24" />
+      <rect x="14" y="14" width="28" height="28" />
+    </svg>
+  )
+}
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      const offset = 80
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - offset
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-      setIsMenuOpen(false)
-    }
-  }
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
-  const experiences: Experience[] = [
-    {
-      title: "Senior Machine Learning Engineer",
-      company: "CVS Health",
-      location: "Cambridge, MA",
-      period: "Sep 2024 – Jan 2026",
-      icon: <Award className="w-6 h-6" />,
-      highlights: [
-        "Delivered real-time recommendations under 200ms with FastAPI microservice integrating geospatial queries and vector embeddings from MongoDB",
-        "Reduced model explainability computation by 8x using GPU-enabled DataProc clusters and parallel SHAP processing",
-        "Improved feature engineering throughput by 25% using NVTabular, Dask, and NVIDIA GPUs",
-        "Orchestrated data ingestion and feature table creation for high-volume healthcare datasets via Airflow and BigQuery"
-      ]
-    },
-    {
-      title: "Machine Learning Engineer",
-      company: "Ikigai Labs",
-      location: "Cambridge, MA",
-      period: "Nov 2023 – Sep 2024",
-      icon: <Code className="w-6 h-6" />,
-      highlights: [
-        "Boosted client operations by 15% for 100TB of data by building 6 scalable time-based algorithms with Python and Ray",
-        "Improved time series accuracy by 8% with scalable change point detection algorithm",
-        "Achieved 99.9% availability deploying on EKS and Anyscale using Helm and Kubernetes",
-        "Enhanced predictive accuracy leveraging LLM-powered Generative AI for tabular and time series analysis"
-      ]
-    },
-    {
-      title: "Machine Learning Engineer",
-      company: "Squark Inc.",
-      location: "Boston, MA",
-      period: "Feb 2023 – Nov 2023",
-      icon: <Database className="w-6 h-6" />,
-      highlights: [
-        "Reduced model insight computation by 75% using NVIDIA RAPIDS and GPU parallel processing on AWS EC2",
-        "Improved load balancing by 30% and decreased downtime by 20% with automated pipeline architecture",
-        "Boosted system performance by 23% integrating Couchbase distributed cache"
-      ]
-    },
-    {
-      title: "ML Engineer Intern",
-      company: "Empallo Inc. (MIT Startup)",
-      location: "Cambridge, MA",
-      period: "Jan 2022 – Aug 2022",
-      icon: <Cloud className="w-6 h-6" />,
-      highlights: [
-        "Enhanced heart failure readmission prediction accuracy by 18% using RNNs on 1.6M+ clinical records",
-        "Increased platform data capacity by 2x through data partitioning using AWS Glue, S3, and Python",
-        "Semi-Finalist, MIT $100K Entrepreneurship Competition (Top 10 out of 83 teams)"
-      ]
-    }
-  ]
-
-  const skills: Record<string, Skill> = {
-    "Machine Learning & AI": {
-      items: ["TensorFlow", "PyTorch", "Keras", "Scikit-learn", "SHAP", "NVTabular", "Ray", "LLMs", "RNNs"],
-      icon: <Award className="w-8 h-8" />
-    },
-    "Programming & Frameworks": {
-      items: ["Python", "SQL", "R", "JavaScript", "Java", "FastAPI", "Airflow", "Spring Boot"],
-      icon: <Code className="w-8 h-8" />
-    },
-    "Cloud & DevOps": {
-      items: ["AWS", "GCP", "Anyscale", "Docker", "Kubernetes", "Helm", "Grafana", "Git"],
-      icon: <Cloud className="w-8 h-8" />
-    },
-    "Data & Databases": {
-      items: ["BigQuery", "MongoDB", "PostgreSQL", "MySQL", "S3", "DynamoDB", "Pandas", "Dask"],
-      icon: <Database className="w-8 h-8" />
-    }
-  }
-
-  const projects: Project[] = [
-    {
-      icon: "🎓",
-      title: "PhD Research: Socio-Technical Legal AI",
-      description: "Investigating how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can enhance legal reasoning while considering socio-technical dimensions and human-centered design principles.",
-      tags: ["PhD Research", "Legal AI", "GNNs", "LLMs", "Neuro-Symbolic", "Socio-Technical"],
-      gradient: "from-purple-500 via-indigo-600 to-blue-700",
-      metrics: "Started January 2026"
-    },
-    {
-      icon: "🏥",
-      title: "Real-Time Healthcare Recommendations",
-      description: "Built FastAPI microservice delivering sub-200ms recommendations using geospatial queries, vector embeddings, and GPU-accelerated feature engineering for CVS Health's provider matching system.",
-      tags: ["FastAPI", "MongoDB", "GPU Computing", "Vector Embeddings", "BigQuery"],
-      gradient: "from-blue-500 via-blue-600 to-indigo-600",
-      metrics: "200ms response time, 25% throughput improvement"
-    },
-    {
-      icon: "📊",
-      title: "Scalable Time Series Platform",
-      description: "Developed 6 production-grade algorithms handling 100TB+ data with 15% operational improvement, featuring advanced change point detection, anomaly detection, and forecasting capabilities.",
-      tags: ["Python", "Ray", "Kubernetes", "AWS", "Anyscale"],
-      gradient: "from-purple-500 via-purple-600 to-pink-600",
-      metrics: "100TB data processed, 99.9% uptime"
-    },
-    {
-      icon: "🧠",
-      title: "Heart Failure Prediction System",
-      description: "Enhanced readmission prediction accuracy by 18% using custom RNN architecture with novel feature engineering on 1.6M+ clinical records. Semi-finalist in MIT $100K Entrepreneurship Competition.",
-      tags: ["RNN", "Healthcare AI", "AWS", "Deep Learning", "Feature Engineering"],
-      gradient: "from-cyan-500 via-blue-600 to-blue-700",
-      metrics: "1.6M+ records, 18% accuracy improvement"
-    },
-    {
-      icon: "⚡",
-      title: "GPU-Accelerated ML Pipeline",
-      description: "Reduced model computation time by 75% using NVIDIA RAPIDS for parallel processing, enabling real-time insights for enterprise SaaS platform serving millions of users.",
-      tags: ["NVIDIA RAPIDS", "GPU Computing", "AWS EC2", "Performance Optimization"],
-      gradient: "from-orange-500 via-red-600 to-pink-600",
-      metrics: "75% computation reduction"
-    },
-    {
-      icon: "🎓",
-      title: "DAESO Hackathon 2022 - Director",
-      description: "Led as Hackathon Director at Northeastern University, attracting 60+ participants across 17 teams. Organized industry seminars and created engaging ML/data science challenges for graduate students.",
-      tags: ["Leadership", "Event Management", "Community Building", "Education"],
-      gradient: "from-green-500 via-emerald-600 to-teal-600",
-      metrics: "60+ participants, 17 teams"
-    },
-  ]
-
-  const stats: Stat[] = [
-  { number: "6+", label: "Years Experience", description: "In ML & Software Engineering" },
-  { number: "2026", label: "PhD Started", description: "Legal AI Research" },
-  { number: "3", label: "Research Areas", description: "GNNs, LLMs, Neuro-Symbolic" },
-  { number: "100TB+", label: "Data Processed", description: "In Previous Roles" }
+const MISSIONS = [
+  {
+    id: 'M-05',
+    status: 'ACTIVE' as const,
+    title: 'PhD Research — Socio-Technical Legal AI',
+    host: 'Monash University',
+    sector: 'Kuala Lumpur, MY',
+    window: '2026-01 / —',
+    notes: [
+      'Investigating how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can enhance legal reasoning while considering socio-technical dimensions and human-centered design principles',
+    ],
+  },
+  {
+    id: 'M-04',
+    status: 'RECOVERED' as const,
+    title: 'Senior Machine Learning Engineer',
+    host: 'CVS Health',
+    sector: 'Cambridge, MA',
+    window: '2024-09 / 2026-01',
+    notes: [
+      'Delivered real-time recommendations under 200ms with FastAPI microservice integrating geospatial queries and vector embeddings from MongoDB',
+      'Reduced model explainability computation by 8x using GPU-enabled DataProc clusters and parallel SHAP processing',
+      'Improved feature engineering throughput by 25% using NVTabular, Dask, and NVIDIA GPUs',
+      'Orchestrated data ingestion and feature table creation for high-volume healthcare datasets via Airflow and BigQuery',
+    ],
+  },
+  {
+    id: 'M-03',
+    status: 'RECOVERED' as const,
+    title: 'Machine Learning Engineer',
+    host: 'Ikigai Labs',
+    sector: 'Cambridge, MA',
+    window: '2023-11 / 2024-09',
+    notes: [
+      'Boosted client operations by 15% for 100TB of data by building 6 scalable time-based algorithms with Python and Ray',
+      'Improved time series accuracy by 8% with scalable change point detection algorithm',
+      'Achieved 99.9% availability deploying on EKS and Anyscale using Helm and Kubernetes',
+      'Enhanced predictive accuracy leveraging LLM-powered Generative AI for tabular and time series analysis',
+    ],
+  },
+  {
+    id: 'M-02',
+    status: 'RECOVERED' as const,
+    title: 'Machine Learning Engineer',
+    host: 'Squark Inc.',
+    sector: 'Boston, MA',
+    window: '2023-02 / 2023-11',
+    notes: [
+      'Reduced model insight computation by 75% using NVIDIA RAPIDS and GPU parallel processing on AWS EC2',
+      'Improved load balancing by 30% and decreased downtime by 20% with automated pipeline architecture',
+      'Boosted system performance by 23% integrating Couchbase distributed cache',
+    ],
+  },
+  {
+    id: 'M-01',
+    status: 'RECOVERED' as const,
+    title: 'ML Engineer Intern',
+    host: 'Empallo Inc. (MIT Startup)',
+    sector: 'Cambridge, MA',
+    window: '2022-01 / 2022-08',
+    notes: [
+      'Enhanced heart failure readmission prediction accuracy by 18% using RNNs on 1.6M+ clinical records',
+      'Increased platform data capacity by 2x through data partitioning using AWS Glue, S3, and Python',
+      'Semi-Finalist, MIT $100K Entrepreneurship Competition (Top 10 out of 83 teams)',
+    ],
+  },
 ]
 
-  const navLinks = ['About', 'Experience', 'Skills', 'Projects', 'Contact', 'Blog']
+const SYSTEMS = [
+  {
+    name: 'COMPUTE / INFERENCE',
+    tagline: 'Models and reasoning',
+    items: ['TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'SHAP', 'NVTabular', 'Ray', 'LLMs', 'RNNs'],
+  },
+  {
+    name: 'PROPULSION',
+    tagline: 'Languages and frameworks',
+    items: ['Python', 'SQL', 'R', 'JavaScript', 'Java', 'FastAPI', 'Airflow', 'Spring Boot'],
+  },
+  {
+    name: 'GROUND INFRASTRUCTURE',
+    tagline: 'Deployment and orchestration',
+    items: ['AWS', 'GCP', 'Anyscale', 'Docker', 'Kubernetes', 'Helm', 'Grafana', 'Git'],
+  },
+  {
+    name: 'SENSOR ARRAY',
+    tagline: 'Data ingest and storage',
+    items: ['BigQuery', 'MongoDB', 'PostgreSQL', 'MySQL', 'S3', 'DynamoDB', 'Pandas', 'Dask'],
+  },
+]
+
+const PAYLOADS = [
+  {
+    id: 'PAYLOAD-01',
+    patch: <PatchGraph key="p1" />,
+    title: 'Real-Time Healthcare Recommendations',
+    status: 'RECOVERED' as const,
+    description: 'Built FastAPI microservice delivering sub-200ms recommendations using geospatial queries, vector embeddings, and GPU-accelerated feature engineering for CVS Health\'s provider matching system.',
+    telemetry: '200ms response time, 25% throughput improvement',
+    subsystems: ['FastAPI', 'MongoDB', 'GPU Computing', 'Vector Embeddings', 'BigQuery'],
+  },
+  {
+    id: 'PAYLOAD-02',
+    patch: <PatchTriangle key="p2" />,
+    title: 'Scalable Time Series Platform',
+    status: 'RECOVERED' as const,
+    description: 'Developed 6 production-grade algorithms handling 100TB+ data with 15% operational improvement, featuring advanced change point detection, anomaly detection, and forecasting capabilities.',
+    telemetry: '100TB data processed, 99.9% uptime',
+    subsystems: ['Python', 'Ray', 'Kubernetes', 'AWS', 'Anyscale'],
+  },
+  {
+    id: 'PAYLOAD-03',
+    patch: <PatchCircleHex key="p3" />,
+    title: 'Heart Failure Prediction System',
+    status: 'RECOVERED' as const,
+    description: 'Enhanced readmission prediction accuracy by 18% using custom RNN architecture with novel feature engineering on 1.6M+ clinical records. Semi-finalist in MIT $100K Entrepreneurship Competition.',
+    telemetry: '1.6M+ records, 18% accuracy improvement',
+    subsystems: ['RNN', 'Healthcare AI', 'AWS', 'Deep Learning', 'Feature Engineering'],
+  },
+  {
+    id: 'PAYLOAD-04',
+    patch: <PatchDiamond key="p4" />,
+    title: 'GPU-Accelerated ML Pipeline',
+    status: 'RECOVERED' as const,
+    description: 'Reduced model computation time by 75% using NVIDIA RAPIDS for parallel processing, enabling real-time insights for enterprise SaaS platform serving millions of users.',
+    telemetry: '75% computation reduction',
+    subsystems: ['NVIDIA RAPIDS', 'GPU Computing', 'AWS EC2', 'Performance Optimization'],
+  },
+  {
+    id: 'PAYLOAD-05',
+    patch: <PatchSquare key="p5" />,
+    title: 'DAESO Hackathon 2022 — Director',
+    status: 'ARCHIVED' as const,
+    description: 'Led as Hackathon Director at Northeastern University, attracting 60+ participants across 17 teams. Organized industry seminars and created engaging ML/data science challenges for graduate students.',
+    telemetry: '60+ participants, 17 teams',
+    subsystems: ['Leadership', 'Event Management', 'Community Building', 'Education'],
+  },
+]
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
+
+export default function Portfolio() {
+  const [mounted, setMounted] = useState(false)
+  const [voyagerMET, setVoyagerMET] = useState('')
+
+  // Voyager 1 launch: 1977-09-05 12:56:00 UTC
+  const VOYAGER_LAUNCH = new Date('1977-09-05T12:56:00Z').getTime()
+
+  useEffect(() => {
+    setMounted(true)
+
+    const tick = () => {
+      const now = Date.now()
+      const diff = now - VOYAGER_LAUNCH
+      const totalSeconds = Math.floor(diff / 1000)
+      const s  = totalSeconds % 60
+      const m  = Math.floor(totalSeconds / 60) % 60
+      const h  = Math.floor(totalSeconds / 3600) % 24
+      const d  = Math.floor(totalSeconds / 86400) % 365
+      const y  = Math.floor(totalSeconds / (86400 * 365.25))
+      setVoyagerMET(`${y}y ${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`)
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
-      {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-lg' : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <button
-              onClick={() => scrollToSection('home')}
-              className="text-2xl md:text-3xl font-extrabold tracking-tight"
-            >
-              <span className="inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-110">
-                SD
-              </span>
-            </button>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map((item) => (
-                item === 'Blog' ? (
-                  <a
-                    key={item}
-                    href="/blog"
-                    className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
-                  >
-                    {item}
-                  </a>
-                ) : (
-                  <button
-                    key={item}
-                    onClick={() => scrollToSection(item.toLowerCase())}
-                    className={`text-sm font-semibold transition-all ${
-                      activeSection === item.toLowerCase()
-                        ? 'text-blue-600 dark:text-blue-400 scale-110'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
-                    }`}
-                  >
-                    {item}
-                  </button>
-                )
-              ))}
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Toggle dark mode"
-              >
-                {theme === 'light' ? (
-                  <Moon className="w-5 h-5 text-gray-700" />
-                ) : (
-                  <Sun className="w-5 h-5 text-yellow-400" />
-                )}
-              </button>
+    <div className="min-h-screen relative" style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
+      {/* Nav */}
+      <NavBar />
+
+      {/* ── GROUND STATION ────────────────────────────────────────────────────── */}
+      <section id="ground" className="relative min-h-screen pt-14 flex flex-col" aria-label="Ground Station">
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-8 items-center relative z-10">
+
+          {/* Left — identity block */}
+          <div className="font-mono-display text-xs tracking-widest space-y-1 md:self-start md:pt-8">
+            <p style={{ color: 'var(--ink-dim)' }}>OPERATOR</p>
+            <p className="text-lg font-bold tracking-wider" style={{ color: 'var(--ink)' }}>SIDDHANT DUBE</p>
+            <div className="mt-3 space-y-1 text-xs" style={{ color: 'var(--ink-dim)' }}>
+              <p><span style={{ color: 'var(--ink)' }}>CALLSIGN</span>  SD-01</p>
+              <p><span style={{ color: 'var(--ink)' }}>STATUS </span>  <span style={{ color: 'var(--instrument)' }}>ACTIVE</span></p>
+              <p><span style={{ color: 'var(--ink)' }}>SECTOR </span>  KUALA LUMPUR, MY</p>
+            </div>
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--inert)' }}>
+              <img
+                src="/Profile.jpg"
+                alt="Siddhant Dube"
+                width={80} height={80}
+                className="rounded-sm"
+                style={{ filter: 'grayscale(20%)' }}
+              />
+            </div>
+          </div>
+
+          {/* Center — Earth canvas placeholder (Phase 3) */}
+          <div
+            className="flex items-center justify-center rounded"
+            style={{ border: '1px solid var(--inert)', minHeight: 320, background: 'var(--bg-elevated)' }}
+            aria-label="Earth globe — live render coming in Phase 3"
+          >
+            <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
+              <p>◎</p>
+              <p className="mt-2">EARTH · SD-01 GROUND TRACK</p>
+              <p className="mt-1 text-[10px]">[3D RENDER LOADING]</p>
+            </div>
+          </div>
+
+          {/* Right — telemetry stack */}
+          <div className="font-mono-display text-xs space-y-4 md:self-start md:pt-8" style={{ minWidth: 220 }}>
+            <p className="tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>TELEMETRY // LIVE</p>
+
+            {/* ISS position (static placeholder) */}
+            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
+              <p style={{ color: 'var(--ink-dim)' }}>ISS POSITION</p>
+              <p className="telemetry-live mt-1">LAT  —.—°  LON  —.—°</p>
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Toggle dark mode"
-              >
-                {theme === 'light' ? (
-                  <Moon className="w-5 h-5 text-gray-700" />
-                ) : (
-                  <Sun className="w-5 h-5 text-yellow-400" />
-                )}
-              </button>
-              <button
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X size={24} className="text-gray-700 dark:text-gray-300" /> : <Menu size={24} className="text-gray-700 dark:text-gray-300" />}
-              </button>
+            {/* Moon phase (static placeholder) */}
+            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
+              <p style={{ color: 'var(--ink-dim)' }}>MOON PHASE</p>
+              <p className="telemetry-live mt-1">— · —%</p>
+            </div>
+
+            {/* APOD */}
+            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
+              <p style={{ color: 'var(--ink-dim)' }}>APOD</p>
+              <p className="telemetry-live mt-1">LOADING...</p>
+            </div>
+
+            {/* NEO count */}
+            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
+              <p style={{ color: 'var(--ink-dim)' }}>NEO PASSES TODAY</p>
+              <p className="telemetry-live mt-1">—</p>
+            </div>
+
+            {/* Voyager MET */}
+            <div className="p-3 rounded border" style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}>
+              <p style={{ color: 'var(--ink-dim)' }}>V1 · MET</p>
+              <p className="telemetry-live mt-1" aria-live="polite">{voyagerMET || '—'}</p>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg">
-            <div className="px-4 py-3 space-y-1">
-              {navLinks.map((item) => (
-                item === 'Blog' ? (
-                  <a
-                    key={item}
-                    href="/blog"
-                    className="block w-full text-left px-4 py-3 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    {item}
-                  </a>
-                ) : (
-                  <button
-                    key={item}
-                    onClick={() => scrollToSection(item.toLowerCase())}
-                    className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
-                      activeSection === item.toLowerCase()
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {item}
-                  </button>
-                )
-              ))}
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Hero Section */}
-      <section id="home" className="pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-pulse"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-200 dark:bg-purple-900/30 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center space-y-6 md:space-y-8 animate-fade-in">
-            <div className="inline-block">
-              <div className="w-28 h-28 md:w-36 md:h-36 mx-auto rounded-full overflow-hidden border-4 border-white shadow-2xl">
-                <img 
-                  src="/Profile.jpg" 
-                  alt="Siddhant Dube" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Siddhant Dube
-              </h1>
-              <p className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                AI/ML Researcher
-              </p>
-              <p className="text-base md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
-                <span className="font-semibold text-purple-600 dark:text-purple-400">PhD Candidate in AI</span> | 
-                Researching socio-technical AI systems, GNNs, LLMs & neuro-symbolic architectures | 
-                Former Senior ML Engineer at CVS Health
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
-              <button
-                onClick={() => scrollToSection('contact')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl transition-all transform hover:-translate-y-1 hover:scale-105"
-              >
-                Get In Touch
-              </button>
-              <a
-                href="https://github.com/siddhantdube1"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-4 border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all inline-flex items-center justify-center gap-2"
-              >
-                <Github size={20} />
-                View GitHub
-              </a>
-            </div>
-
-            <button
-              onClick={() => scrollToSection('about')}
-              className="mt-12 inline-block animate-bounce"
-              aria-label="Scroll to about section"
-            >
-              <ChevronDown size={36} className="text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400 transition-colors" />
-            </button>
-          </div>
+        {/* Bottom ticker */}
+        <div
+          className="border-t py-2 px-4 font-mono-display text-xs overflow-hidden"
+          style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)', color: 'var(--ink-dim)' }}
+        >
+          <BottomTicker voyagerMET={voyagerMET} />
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300">
+      {/* ── MANIFEST ──────────────────────────────────────────────────────────── */}
+      <section id="manifest" className="py-24 px-4 relative z-10" aria-label="Manifest">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-center mb-12 md:mb-20 text-gray-900 dark:text-white">
-            About Me
-          </h2>
-          
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-start">
-            <div className="space-y-6 text-gray-600 dark:text-gray-400 text-base md:text-lg leading-relaxed">
-              <p className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
-                I&apos;m a PhD student researching Legal AI with a focus on socio-technical systems, where I explore how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can transform legal reasoning and decision-making.
-              </p>
-              <p>
-                With a <span className="font-semibold text-gray-800 dark:text-gray-200">Master&apos;s in Data Analytics Engineering from Northeastern University</span> and extensive experience across healthcare, enterprise SaaS, and analytics platforms, I specialize in building scalable ML systems using cutting-edge technologies like GPU-accelerated computing, distributed systems, and modern cloud architectures.
-              </p>
-              <p>
-                My research combines technical AI innovation with socio-technical perspectives, examining how <span className="font-semibold text-blue-600 dark:text-blue-400">GNNs, LLMs, and neuro-symbolic architectures</span> can address complex legal challenges while considering their broader societal impacts and human-centered design.
-              </p>
-              <p>
-                Before starting my PhD in January 2026, I was a Senior ML Engineer at CVS Health, where I built production AI systems. I&apos;ve also led hackathons, mentored 100+ students, and contributed to MIT-backed startups, always seeking to make AI more impactful and accessible.
-              </p>
+          <SectionHeading title="MANIFEST" sub="// IF FOUND DRIFTING, READ FIRST" />
 
-              <div className="pt-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Education</h3>
-                <div className="space-y-3">
-                  <div className="border-l-4 border-blue-600 dark:border-blue-400 pl-4">
-                    <p className="font-semibold text-gray-900 dark:text-white">Northeastern University</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">M.S. Data Analytics Engineering (GPA: 3.76/4.00)</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">Boston, MA | 2021 - 2022</p>
-                  </div>
-                  <div className="border-l-4 border-purple-600 dark:border-purple-400 pl-4">
-                    <p className="font-semibold text-gray-900 dark:text-white">Monash University</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">B.Eng. Software Engineering (First Class Honours)</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-500">Kuala Lumpur, Malaysia | 2017 - 2020</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 md:gap-6">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white text-center transform hover:scale-105 transition-all shadow-xl hover:shadow-2xl"
-                >
-                  <div className="text-3xl md:text-5xl font-extrabold mb-2">{stat.number}</div>
-                  <div className="text-sm md:text-base font-bold opacity-95 mb-1">{stat.label}</div>
-                  <div className="text-xs opacity-80">{stat.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Experience Section */}
-      <section id="experience" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-center mb-12 md:mb-20 text-gray-900 dark:text-white">
-            Professional Experience
-          </h2>
-          
-          <div className="space-y-6 md:space-y-8">
-            {experiences.map((exp, index) => (
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+            {/* Left — pulsar map placeholder (Phase 4) */}
+            <div className="flex flex-col items-center gap-4">
               <div
-                key={index}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-10 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+                className="w-full max-w-sm flex items-center justify-center rounded"
+                style={{ border: '1px solid var(--inert)', background: 'var(--bg-elevated)', aspectRatio: '1', minHeight: 280 }}
+                aria-label="Voyager pulsar map — rendered in Phase 4"
               >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
-                  <div className="flex items-start gap-4 mb-4 md:mb-0">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl text-white flex-shrink-0">
-                      {exp.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                        {exp.title}
-                      </h3>
-                      <p className="text-lg md:text-xl text-blue-600 dark:text-blue-400 font-bold">
-                        {exp.company}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{exp.location}</p>
-                    </div>
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400 font-semibold bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-lg">
-                    {exp.period}
-                  </div>
+                <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
+                  <p>⊕</p>
+                  <p className="mt-2">VOYAGER PULSAR MAP</p>
+                  <p className="mt-1 text-[10px]">[SVG RENDER — PHASE 4]</p>
                 </div>
-                
-                <ul className="space-y-3 mt-6">
-                  {exp.highlights.map((highlight, i) => (
-                    <li key={i} className="flex items-start group">
-                      <span className="text-blue-600 dark:text-blue-400 mr-3 mt-1 text-lg font-bold group-hover:scale-125 transition-transform">▸</span>
-                      <span className="text-gray-700 dark:text-gray-300 leading-relaxed">{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
+              </div>
+              <p className="font-serif-inscription italic text-sm text-center max-w-xs" style={{ color: 'var(--ink-dim)' }}>
+                &ldquo;If you find this drifting, here&apos;s where I am.&rdquo; — SD
+              </p>
+            </div>
+
+            {/* Right — bio + training logs */}
+            <div className="space-y-8">
+              <div>
+                <p className="font-mono-display text-xs tracking-widest mb-3" style={{ color: 'var(--instrument)' }}>CARGO MANIFEST — entry SD-01</p>
+                <div className="space-y-4 leading-relaxed" style={{ color: 'var(--ink)' }}>
+                  <p>
+                    I&apos;m a PhD researcher in socio-technical AI, exploring how Graph Neural Networks,
+                    Large Language Models, and neuro-symbolic architectures can transform legal reasoning
+                    and decision-making while considering their broader societal impacts and human-centered design.
+                  </p>
+                  <p>
+                    Before this, I spent ~4.5 years building production ML systems — most recently as a
+                    Senior ML Engineer at CVS Health, before that at Ikigai Labs, Squark, and an
+                    MIT-backed startup called Empallo. M.S. from Northeastern, B.Eng. from Monash.
+                  </p>
+                  <p>
+                    Off-mission: mathematics, programming as problem-solving, philosophy, and a
+                    long-standing addiction to landscape photography.
+                  </p>
+                </div>
+              </div>
+
+              {/* Training logs */}
+              <div className="border-t pt-6 space-y-6" style={{ borderColor: 'var(--inert)' }}>
+                <p className="font-mono-display text-xs tracking-widest" style={{ color: 'var(--ink-dim)' }}>TRAINING LOGS</p>
+
+                <div className="font-mono-display text-xs space-y-1">
+                  <p className="font-bold" style={{ color: 'var(--instrument)' }}>TRAINING LOG / 02</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>INSTITUTION  </span>Northeastern University, Boston MA</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>PROGRAM      </span>M.S. Data Analytics Engineering</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>PERIOD       </span>2021 — 2022</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>NOTES        </span>GPA 3.76 / 4.00</p>
+                </div>
+
+                <div className="font-mono-display text-xs space-y-1">
+                  <p className="font-bold" style={{ color: 'var(--instrument)' }}>TRAINING LOG / 01</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>INSTITUTION  </span>Monash University, Kuala Lumpur MY</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>PROGRAM      </span>B.Eng. Software Engineering (First Class Honours)</p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>PERIOD       </span>2017 — 2020</p>
+                </div>
+              </div>
+
+              {/* Inscription */}
+              <div className="pt-4 border-t" style={{ borderColor: 'var(--inert)' }}>
+                <p className="font-serif-inscription italic" style={{ color: 'var(--ink-dim)', fontSize: '1rem' }}>
+                  &ldquo;It from bit.&rdquo; — Wheeler
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MISSION LOG ───────────────────────────────────────────────────────── */}
+      <section id="log" className="py-24 px-4 relative z-10" style={{ background: 'var(--bg-elevated)' }} aria-label="Mission Log">
+        <div className="max-w-7xl mx-auto">
+          <SectionHeading title="MISSION LOG" sub="// FIVE LOGGED MISSIONS — MOST RECENT FIRST" />
+
+          <div className="space-y-6">
+            {MISSIONS.map(mission => (
+              <div
+                key={mission.id}
+                className="rounded border p-6"
+                style={{ borderColor: 'var(--inert)', background: 'var(--bg)' }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+                  <div className="font-mono-display text-xs flex gap-6">
+                    <span><span style={{ color: 'var(--ink-dim)' }}>MISSION  </span><span className="font-bold" style={{ color: 'var(--ink)' }}>{mission.id}</span></span>
+                    <span>
+                      <span style={{ color: 'var(--ink-dim)' }}>STATUS  </span>
+                      <span
+                        className="font-bold"
+                        style={{ color: mission.status === 'ACTIVE' ? 'var(--instrument)' : 'var(--ink-dim)' }}
+                      >
+                        {mission.status}
+                      </span>
+                    </span>
+                  </div>
+                  <span className="font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>{mission.window}</span>
+                </div>
+
+                <div className="h-px mb-4" style={{ background: 'var(--inert)' }} />
+
+                <div className="font-mono-display text-xs space-y-1 mb-4">
+                  <p><span style={{ color: 'var(--ink-dim)' }}>TITLE   </span><span style={{ color: 'var(--ink)' }}>{mission.title}</span></p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>HOST    </span><span style={{ color: 'var(--ink)' }}>{mission.host}</span></p>
+                  <p><span style={{ color: 'var(--ink-dim)' }}>SECTOR  </span><span style={{ color: 'var(--ink)' }}>{mission.sector}</span></p>
+                </div>
+
+                <div className="mt-4">
+                  <p className="font-mono-display text-xs mb-3" style={{ color: 'var(--ink-dim)' }}>PAYLOAD NOTES</p>
+                  <ul className="space-y-2">
+                    {mission.notes.map((note, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>
+                        <span className="flex-shrink-0 font-mono-display" style={{ color: 'var(--instrument)' }}>▸</span>
+                        {note}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Skills Section */}
-      <section id="skills" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300">
+      {/* ── ONBOARD SYSTEMS ───────────────────────────────────────────────────── */}
+      <section id="systems" className="py-24 px-4 relative z-10" aria-label="Onboard Systems">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-center mb-12 md:mb-20 text-gray-900 dark:text-white">
-            Technical Expertise
-          </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {Object.entries(skills).map(([category, { items, icon }], index) => (
+          <SectionHeading title="ONBOARD SYSTEMS" sub="// FOUR SUBSYSTEMS, ALL NOMINAL" />
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {SYSTEMS.map(sys => (
               <div
-                key={index}
-                className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+                key={sys.name}
+                className="rounded border p-5"
+                style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}
               >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl text-white">
-                    {icon}
-                  </div>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-                    {category}
-                  </h3>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-mono-display text-xs font-bold tracking-widest" style={{ color: 'var(--ink)' }}>
+                    {sys.name}
+                  </p>
+                  <span className="flex items-center gap-1 font-mono-display text-[10px]" style={{ color: 'var(--instrument)' }}>
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--instrument)' }} />
+                    NOMINAL
+                  </span>
                 </div>
+                <p className="font-mono-display text-[10px] mb-4" style={{ color: 'var(--ink-dim)' }}>{sys.tagline}</p>
                 <div className="flex flex-wrap gap-2">
-                  {items.map((skill, i) => (
+                  {sys.items.map(item => (
                     <span
-                      key={i}
-                      className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-xs md:text-sm font-semibold hover:from-blue-700 hover:to-purple-700 transition-all cursor-default"
+                      key={item}
+                      className="font-mono-display text-[10px] px-2 py-1 rounded border hover-brighten cursor-default transition-colors duration-150"
+                      style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
                     >
-                      {skill}
+                      {item}
                     </span>
                   ))}
                 </div>
@@ -715,42 +637,54 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Projects Section */}
-      <section id="projects" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      {/* ── ACTIVE PAYLOADS ───────────────────────────────────────────────────── */}
+      <section id="payloads" className="py-24 px-4 relative z-10" style={{ background: 'var(--bg-elevated)' }} aria-label="Active Payloads">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-center mb-12 md:mb-20 text-gray-900 dark:text-white">
-            Featured Projects
-          </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {projects.map((project, index) => (
+          <SectionHeading title="ACTIVE PAYLOADS" sub="// FIVE PROBES, VARIED TRAJECTORIES" />
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PAYLOADS.map(payload => (
               <div
-                key={index}
-                className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-3 border border-gray-100 dark:border-gray-700"
+                key={payload.id}
+                className="rounded border p-5 flex flex-col"
+                style={{ borderColor: 'var(--inert)', background: 'var(--bg)' }}
               >
-                <div className={`h-48 md:h-56 bg-gradient-to-br ${project.gradient} flex items-center justify-center text-6xl md:text-8xl relative overflow-hidden`}>
-                  <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity"></div>
-                  {project.icon}
-                </div>
-                <div className="p-6 md:p-8">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed text-sm md:text-base">
-                    {project.description}
-                  </p>
-                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    <p className="text-xs md:text-sm font-semibold text-blue-800 dark:text-blue-400">{project.metrics}</p>
+                <div className="flex items-start gap-4 mb-4">
+                  <div aria-hidden="true">{payload.patch}</div>
+                  <div>
+                    <p className="font-mono-display text-[10px] tracking-widest" style={{ color: 'var(--ink-dim)' }}>{payload.id}</p>
+                    <p className="font-bold text-sm leading-snug mt-0.5" style={{ color: 'var(--ink)' }}>{payload.title}</p>
+                    <p
+                      className="font-mono-display text-[10px] tracking-widest mt-1"
+                      style={{ color: payload.status === 'ARCHIVED' ? 'var(--ink-dim)' : 'var(--instrument)' }}
+                    >
+                      STATUS  {payload.status}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                </div>
+
+                <p className="text-sm leading-relaxed flex-1" style={{ color: 'var(--ink-dim)' }}>
+                  {payload.description}
+                </p>
+
+                <div className="mt-4 pt-4 border-t space-y-3" style={{ borderColor: 'var(--inert)' }}>
+                  <div>
+                    <p className="font-mono-display text-[10px] tracking-widest mb-1" style={{ color: 'var(--ink-dim)' }}>TELEMETRY</p>
+                    <p className="font-mono-display text-xs" style={{ color: 'var(--warning)' }}>{payload.telemetry}</p>
+                  </div>
+                  <div>
+                    <p className="font-mono-display text-[10px] tracking-widest mb-2" style={{ color: 'var(--ink-dim)' }}>SUBSYSTEMS</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {payload.subsystems.map(s => (
+                        <span
+                          key={s}
+                          className="font-mono-display text-[10px] px-2 py-0.5 rounded border"
+                          style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -759,100 +693,115 @@ export default function Portfolio() {
         </div>
       </section>
 
-{/* Contact Section */}
-      <section id="contact" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-8 text-gray-900 dark:text-white text-center">
-            Let&apos;s Connect
-          </h2>
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto text-center">
-            I&apos;m always interested in discussing ML engineering, AI research, collaborations, or new opportunities. 
-            Feel free to reach out!
-          </p>
-
-          {/* Contact Form */}
-          <ContactForm />
-
-          {/* Divider */}
-          <div className="my-12 flex items-center">
-            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
-            <span className="px-4 text-gray-500 dark:text-gray-400 text-sm">or reach out directly</span>
-            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
-          </div>
-          
-          {/* Contact Links */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <a
-              href="mailto:siddhantdube1@gmail.com"
-              className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl transition-all transform hover:-translate-y-1"
-            >
-              <Mail size={22} />
-              <span>Email</span>
-            </a>
-            <a
-              href="https://linkedin.com/in/siddhantdube"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 hover:shadow-2xl transition-all transform hover:-translate-y-1"
-            >
-              <Linkedin size={22} />
-              <span>LinkedIn</span>
-            </a>
-            <a
-              href="https://github.com/siddhantdube1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-bold hover:from-gray-900 hover:to-black hover:shadow-2xl transition-all transform hover:-translate-y-1"
-            >
-              <Github size={22} />
-              <span>GitHub</span>
-            </a>
-            <a
-              href="tel:+601159402122"
-              className="flex items-center justify-center gap-3 px-6 py-5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:from-green-700 hover:to-green-800 hover:shadow-2xl transition-all transform hover:-translate-y-1"
-            >
-              <Phone size={22} />
-              <span>Call</span>
-            </a>
-          </div>
-
-          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-gray-600 dark:text-gray-400 mb-4 text-center">Download my resume or view my latest work</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="px-8 py-3 border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-lg font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all inline-flex items-center justify-center gap-2">
-                <ExternalLink size={18} />
-                Download Resume
-              </button>
+      {/* ── DOWNLINK (Photography) ────────────────────────────────────────────── */}
+      <section id="downlink" className="py-24 px-4 relative z-10" aria-label="Downlink">
+        <div className="max-w-7xl mx-auto">
+          <SectionHeading title="DOWNLINK" sub="// IMAGERY RECEIVED FROM SURFACE" />
+          <div
+            className="flex items-center justify-center rounded border"
+            style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)', minHeight: 280 }}
+          >
+            <div className="text-center font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
+              <p>⬡</p>
+              <p className="mt-2">DOWNLINK GALLERY</p>
+              <p className="mt-1 text-[10px]">[PHOTOGRAPHY SECTION — PHASE 5]</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8 md:py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">Siddhant Dube</p>
-            <p className="text-gray-400 text-sm">
-              AI/ML Researcher | PhD Candidate
-            </p>
-            <div className="flex justify-center gap-6 pt-4">
-              <a href="https://github.com/siddhantdube1" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
-                <Github size={24} />
+      {/* ── OPEN CHANNEL (Contact) ────────────────────────────────────────────── */}
+      <section id="channel" className="py-24 px-4 relative z-10" style={{ background: 'var(--bg-elevated)' }} aria-label="Open Channel">
+        <div className="max-w-3xl mx-auto">
+          <SectionHeading title="OPEN CHANNEL" sub="// TRANSMISSION OUTBOUND" />
+
+          {/* Carrier signal indicator */}
+          <div className="flex items-center gap-2 mb-8 font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>
+            <CarrierSignal />
+            <span>CARRIER SIGNAL ACTIVE — CHANNEL OPEN</span>
+          </div>
+
+          <ContactForm />
+
+          {/* Divider */}
+          <div className="my-8 flex items-center gap-4">
+            <div className="flex-1 h-px" style={{ background: 'var(--inert)' }} />
+            <span className="font-mono-display text-xs" style={{ color: 'var(--ink-dim)' }}>DIRECT FREQUENCIES</span>
+            <div className="flex-1 h-px" style={{ background: 'var(--inert)' }} />
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { href: 'mailto:siddhantdube1@gmail.com', icon: <Mail size={16} />, label: 'EMAIL' },
+              { href: 'https://linkedin.com/in/siddhantdube', icon: <LinkedinIcon />, label: 'LINKEDIN', external: true },
+              { href: 'https://github.com/siddhantdube1', icon: <GithubIcon />, label: 'GITHUB', external: true },
+              { href: 'tel:+601159402122', icon: <Phone size={16} />, label: 'VOICE' },
+            ].map(({ href, icon, label, external }) => (
+              <a
+                key={label}
+                href={href}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
+                className="flex items-center justify-center gap-2 py-3 border font-mono-display text-xs tracking-widest transition-colors duration-150"
+                style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--instrument)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--instrument)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--inert)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--ink-dim)' }}
+              >
+                {icon}
+                {label}
               </a>
-              <a href="https://linkedin.com/in/siddhantdube" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
-                <Linkedin size={24} />
-              </a>
-              <a href="mailto:siddhantdube1@gmail.com" className="hover:text-blue-400 transition-colors">
-                <Mail size={24} />
-              </a>
-            </div>
-            <p className="text-gray-500 text-sm pt-6">
-              © 2026 Siddhant Dube. All rights reserved.
-            </p>
+            ))}
           </div>
         </div>
+      </section>
+
+      {/* ── Footer ────────────────────────────────────────────────────────────── */}
+      <footer
+        className="border-t py-8 px-4 text-center font-mono-display text-xs"
+        style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)', background: 'var(--bg)' }}
+      >
+        <p>SD-01 · siddhantdube1.github.io</p>
+        <p className="mt-1">© 2026 Siddhant Dube — all rights reserved.</p>
       </footer>
     </div>
+  )
+}
+
+// ─── Bottom ticker ────────────────────────────────────────────────────────────
+
+function BottomTicker({ voyagerMET }: { voyagerMET: string }) {
+  const [mode, setMode] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setMode(m => (m + 1) % 2), 8000)
+    return () => clearInterval(id)
+  }, [])
+
+  const lines = [
+    `MISSION ELAPSED TIME (VOYAGER 1 SINCE 1977-09-05) — ${voyagerMET || '—'}`,
+    `GROUND STATION · SD-01 · SECTOR KUALA LUMPUR, MY · STATUS ACTIVE`,
+  ]
+
+  return (
+    <p className="tracking-widest truncate" style={{ color: 'var(--ink-dim)' }}>
+      ▸ {lines[mode]}
+    </p>
+  )
+}
+
+// ─── Carrier signal indicator ─────────────────────────────────────────────────
+
+function CarrierSignal() {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span
+        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+        style={{ background: 'var(--instrument)' }}
+      />
+      <span
+        className="relative inline-flex rounded-full h-2 w-2"
+        style={{ background: 'var(--instrument)' }}
+      />
+    </span>
   )
 }
