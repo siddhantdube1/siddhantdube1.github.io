@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import FocusTrap from 'focus-trap-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,78 +65,87 @@ interface LightboxProps {
 function Lightbox({ photos, index, onClose, onPrev, onNext }: LightboxProps) {
   const photo = photos[index]
 
+  // Arrow-key navigation stays on window so it works regardless of focus position.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowLeft')  onPrev()
       if (e.key === 'ArrowRight') onNext()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose, onPrev, onNext])
+  }, [onPrev, onNext])
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: 'rgba(4,6,13,0.95)' }}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Photo lightbox: ${photo.title}`}
+    // FocusTrap handles ESC via onDeactivate and cycles Tab within the modal.
+    <FocusTrap
+      focusTrapOptions={{
+        onDeactivate: onClose,
+        clickOutsideDeactivates: true,
+        escapeDeactivates: true,
+        initialFocus: '[data-lightbox-close]',
+      }}
     >
       <div
-        className="relative flex flex-col md:flex-row max-w-5xl w-full mx-4 rounded"
-        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--inert)' }}
-        onClick={e => e.stopPropagation()}
+        className="fixed inset-0 z-[100] flex items-center justify-center"
+        style={{ background: 'rgba(4,6,13,0.95)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Photo lightbox: ${photo.title}`}
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 p-1 rounded transition-colors duration-150"
-          style={{ color: 'var(--ink-dim)' }}
-          aria-label="Close lightbox"
-          onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--instrument)')}
-          onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--ink-dim)')}
+        <div
+          className="relative flex flex-col md:flex-row max-w-5xl w-full mx-4 rounded"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--inert)' }}
         >
-          <X size={18} />
-        </button>
+          {/* Close */}
+          <button
+            data-lightbox-close
+            onClick={onClose}
+            className="absolute top-3 right-3 z-10 p-1 rounded transition-colors duration-150"
+            style={{ color: 'var(--ink-dim)' }}
+            aria-label="Close lightbox"
+            onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--instrument)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--ink-dim)')}
+          >
+            <X size={18} />
+          </button>
 
-        {/* Image */}
-        <div className="relative flex-1 min-h-[280px] md:min-h-[420px]">
-          <Image
-            src={photo.src}
-            alt={photo.title}
-            fill
-            className="object-contain rounded-t md:rounded-l md:rounded-tr-none"
-            sizes="(max-width: 768px) 100vw, 70vw"
-          />
-          {/* Prev / Next */}
-          {photos.length > 1 && (
-            <>
-              <button
-                onClick={onPrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded transition-colors duration-150"
-                style={{ color: 'var(--ink-dim)', background: 'var(--bg-elevated)' }}
-                aria-label="Previous photo"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={onNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded transition-colors duration-150"
-                style={{ color: 'var(--ink-dim)', background: 'var(--bg-elevated)' }}
-                aria-label="Next photo"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </>
-          )}
+          {/* Image */}
+          <div className="relative flex-1 min-h-[280px] md:min-h-[420px]">
+            <Image
+              src={photo.src}
+              alt={photo.title}
+              fill
+              className="object-contain rounded-t md:rounded-l md:rounded-tr-none"
+              sizes="(max-width: 768px) 100vw, 70vw"
+            />
+            {/* Prev / Next */}
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={onPrev}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded transition-colors duration-150"
+                  style={{ color: 'var(--ink-dim)', background: 'var(--bg-elevated)' }}
+                  aria-label="Previous photo"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={onNext}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded transition-colors duration-150"
+                  style={{ color: 'var(--ink-dim)', background: 'var(--bg-elevated)' }}
+                  aria-label="Next photo"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Metadata */}
+          <MetaSidebar photo={photo} />
         </div>
-
-        {/* Metadata */}
-        <MetaSidebar photo={photo} />
       </div>
-    </div>
+    </FocusTrap>
   )
 }
 
@@ -147,12 +157,21 @@ interface DownlinkGalleryProps {
 
 export function DownlinkGallery({ photos }: DownlinkGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  // Track the element that triggered the lightbox so we can return focus on close.
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   const featured = photos.filter(p => p.featured)
   const hero = featured[Math.floor(Date.now() / 86400000) % Math.max(featured.length, 1)]
 
-  const open  = (i: number) => setLightboxIndex(i)
-  const close = useCallback(() => setLightboxIndex(null), [])
+  const open = (i: number, trigger: HTMLElement) => {
+    triggerRef.current = trigger
+    setLightboxIndex(i)
+  }
+  const close = useCallback(() => {
+    setLightboxIndex(null)
+    triggerRef.current?.focus()
+    triggerRef.current = null
+  }, [])
   const prev  = useCallback(() => setLightboxIndex(i => i === null ? null : (i - 1 + photos.length) % photos.length), [photos.length])
   const next  = useCallback(() => setLightboxIndex(i => i === null ? null : (i + 1) % photos.length), [photos.length])
 
@@ -163,11 +182,11 @@ export function DownlinkGallery({ photos }: DownlinkGalleryProps) {
         <div
           className="relative w-full mb-8 rounded overflow-hidden cursor-pointer"
           style={{ height: 300, border: '1px solid var(--inert)' }}
-          onClick={() => open(photos.indexOf(hero))}
+          onClick={e => open(photos.indexOf(hero), e.currentTarget as HTMLElement)}
           role="button"
           tabIndex={0}
           aria-label={`Open featured photo: ${hero.title}`}
-          onKeyDown={e => e.key === 'Enter' && open(photos.indexOf(hero))}
+          onKeyDown={e => e.key === 'Enter' && open(photos.indexOf(hero), e.currentTarget as HTMLElement)}
         >
           <Image
             src={hero.src}
@@ -192,7 +211,7 @@ export function DownlinkGallery({ photos }: DownlinkGalleryProps) {
         {photos.map((photo, i) => (
           <button
             key={photo.id}
-            onClick={() => open(i)}
+            onClick={e => open(i, e.currentTarget as HTMLElement)}
             className="relative overflow-hidden rounded transition-opacity duration-150"
             style={{ aspectRatio: '4/3', border: '1px solid var(--inert)' }}
             aria-label={`Open photo: ${photo.title}`}
