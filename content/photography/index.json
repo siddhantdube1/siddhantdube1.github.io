@@ -1,34 +1,111 @@
 [
   {
-    "id": "img-001",
-    "src": "/photography/placeholder-1.jpg",
-    "title": "Cameron Highlands, MY",
-    "captured_at": "2023-08-14",
-    "location": { "lat": 4.470, "lon": 101.388, "name": "Cameron Highlands, Pahang" },
-    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "23mm", "aperture": "f/8", "shutter": "1/250s", "iso": 200 },
-    "caption": "Tea estate, morning. The clouds were lower than the road.",
-    "featured": true,
+    "id": "pic2",
+    "src": "/photography/pic2.jpeg",
+    "title": "Hatchers Pass",
+    "captured_at": "2025-09-04",
+    "location": {
+      "lat": 61.772172,
+      "lon": -149.294036,
+      "name": "Matanuska-Susitna Borough, Alaska, United States"
+    },
+    "exif": {
+      "camera": "Apple iPhone 13 Pro",
+      "lens": "iPhone 13 Pro back triple camera 9mm f/2.8",
+      "focal": "9mm",
+      "aperture": "f/2.8",
+      "shutter": "1/137s",
+      "iso": 32
+    },
+    "caption": "A shot from Hatchers Pass summit, overlooking the Mountains covered in clouds.",
+    "featured": false,
     "panorama": false
   },
   {
-    "id": "img-002",
-    "src": "/photography/placeholder-2.jpg",
-    "title": "Batu Caves, MY",
-    "captured_at": "2023-05-22",
-    "location": { "lat": 3.237, "lon": 101.683, "name": "Batu Caves, Selangor" },
-    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "16mm", "aperture": "f/5.6", "shutter": "1/500s", "iso": 400 },
-    "caption": "The staircase before the crowds arrive.",
-    "featured": true,
+    "id": "pic1",
+    "src": "/photography/pic1.jpeg",
+    "title": "Seward Highway",
+    "captured_at": "2025-09-03",
+    "location": {
+      "lat": 60.288356,
+      "lon": -149.344467,
+      "name": "Seward Highway, Alaska, United States"
+    },
+    "exif": {
+      "camera": "Apple iPhone 13 Pro",
+      "lens": "iPhone 13 Pro back triple camera 5.7mm f/1.5",
+      "focal": "6mm",
+      "aperture": "f/1.5",
+      "shutter": "1/5s",
+      "iso": 1600
+    },
+    "caption": "A scenic drive along the Seward Highway, early morning before sunrise, with the mountains and clouds in the background.",
+    "featured": false,
     "panorama": false
   },
   {
-    "id": "img-003",
-    "src": "/photography/placeholder-3.jpg",
-    "title": "Taman Negara, MY",
-    "captured_at": "2022-12-10",
-    "location": { "lat": 4.383, "lon": 102.433, "name": "Taman Negara, Pahang" },
-    "exif": { "camera": "Fujifilm X-T4", "lens": "16-80mm", "focal": "35mm", "aperture": "f/4", "shutter": "1/60s", "iso": 1600 },
-    "caption": "Primary rainforest canopy at dusk. 130 million years old.",
+    "id": "pic3",
+    "src": "/photography/pic3.jpeg",
+    "title": "Aurora Borealis",
+    "captured_at": "2025-09-03",
+    "location": {
+      "lat": 64.888703,
+      "lon": -147.923539,
+      "name": "Fairbanks, Alaska, United States"
+    },
+    "exif": {
+      "camera": "Apple iPhone 13 Pro",
+      "lens": "iPhone 13 Pro back triple camera 5.7mm f/1.5",
+      "focal": "6mm",
+      "aperture": "f/1.5",
+      "shutter": "2s",
+      "iso": 2500
+    },
+    "caption": "The Northern Lights dancing over Fairbanks, Alaska.",
+    "featured": false,
+    "panorama": false
+  },
+  {
+    "id": "pic4",
+    "src": "/photography/pic4.jpeg",
+    "title": "Denali Highway",
+    "captured_at": "2025-09-03",
+    "location": {
+      "lat": 63.440617,
+      "lon": -148.851075,
+      "name": "Denali Highway, Alaska, United States"
+    },
+    "exif": {
+      "camera": "Apple iPhone 13 Pro",
+      "lens": "iPhone 13 Pro back triple camera 9mm f/2.8",
+      "focal": "9mm",
+      "aperture": "f/2.8",
+      "shutter": "1/99s",
+      "iso": 40
+    },
+    "caption": "A breathtaking view of the Denali Highway, showcasing the stunning Alaskan mountains.",
+    "featured": false,
+    "panorama": false
+  },
+  {
+    "id": "pic5",
+    "src": "/photography/pic5.jpeg",
+    "title": "Seward Highway",
+    "captured_at": "2025-09-03",
+    "location": {
+      "lat": 60.684075,
+      "lon": -149.478761,
+      "name": "Seward Highway, Alaska, United States"
+    },
+    "exif": {
+      "camera": "Apple iPhone 13 Pro",
+      "lens": "iPhone 13 Pro back triple camera 9mm f/2.8",
+      "focal": "9mm",
+      "aperture": "f/2.8",
+      "shutter": "1/91s",
+      "iso": 200
+    },
+    "caption": "Morning Sunrise shining through the clouds along the Seward Highway, with the mountains in the background.",
     "featured": false,
     "panorama": false
   }
