@@ -11,6 +11,7 @@ interface BlogPost {
   excerpt: string
   tags: string[]
   readTime: string
+  tx_number: number
 }
 
 export default function BlogPage() {
@@ -36,8 +37,6 @@ export default function BlogPage() {
     const matchesTag = !selectedTag || post.tags.includes(selectedTag)
     return matchesSearch && matchesTag
   })
-
-  const txNumber = (index: number) => `TX-${String(posts.length - index).padStart(3, '0')}`
 
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
@@ -140,7 +139,7 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="space-y-0">
-            {filteredPosts.map((post, index) => (
+            {filteredPosts.map((post) => (
               <article
                 key={post.slug}
                 className="border-b py-5 group"
@@ -151,7 +150,7 @@ export default function BlogPage() {
                     className="font-mono-display text-xs flex-shrink-0 w-16"
                     style={{ color: 'var(--instrument)' }}
                   >
-                    {txNumber(index)}
+                    {`TX-${String(post.tx_number).padStart(3, '0')}`}
                   </span>
                   <span
                     className="font-mono-display text-xs flex-shrink-0"

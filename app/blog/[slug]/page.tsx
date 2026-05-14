@@ -16,6 +16,7 @@ interface BlogPost {
   content: string
   readTime: string
   author: string
+  tx_number: number
 }
 
 export default function BlogPostPage() {
@@ -84,7 +85,7 @@ export default function BlogPostPage() {
         {/* Transmission header block */}
         <header className="mb-10 border-b pb-8" style={{ borderColor: 'var(--inert)' }}>
           <div className="font-mono-display text-xs space-y-1 mb-6">
-            <p><span style={{ color: 'var(--ink-dim)' }}>TRANSMISSION  </span><span style={{ color: 'var(--instrument)' }}>TX-???</span></p>
+            <p><span style={{ color: 'var(--ink-dim)' }}>TRANSMISSION  </span><span style={{ color: 'var(--instrument)' }}>{`TX-${String(post.tx_number).padStart(3, '0')}`}</span></p>
             <p><span style={{ color: 'var(--ink-dim)' }}>ORIGIN        </span>KUALA LUMPUR</p>
             <p><span style={{ color: 'var(--ink-dim)' }}>TIMESTAMP     </span>{post.date}</p>
             <p><span style={{ color: 'var(--ink-dim)' }}>SUBJECT       </span>{post.title}</p>

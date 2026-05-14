@@ -14,6 +14,7 @@ export interface BlogPost {
   readTime: string
   author: string
   coverImage?: string
+  tx_number: number
 }
 
 export function getSortedPostsData(): BlogPost[] {
@@ -45,27 +46,31 @@ export function getSortedPostsData(): BlogPost[] {
         readTime: `${readTime} min read`,
         author: data.author || 'Siddhant Dube',
         coverImage: data.coverImage,
+        tx_number: 0, // assigned below after ascending sort
       } as BlogPost
     })
 
-  return allPostsData.sort((a, b) => {
-    if (a.date < b.date) {
-      return 1
-    } else {
-      return -1
-    }
-  })
+  // Assign stable tx_number: oldest post = 1, next oldest = 2, …
+  // Sort ascending by date first so the number is date-order stable.
+  allPostsData.sort((a, b) => (a.date < b.date ? -1 : 1))
+  allPostsData.forEach((post, i) => { post.tx_number = i + 1 })
+
+  // Return newest-first for display.
+  return allPostsData.reverse()
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
+  // Use getSortedPostsData so tx_number is already assigned correctly.
+  const all = getSortedPostsData()
+  const found = all.find(p => p.slug === slug)
+  if (found) return found
+
+  // Fallback: slug exists on disk but wasn't indexed (shouldn't happen).
   try {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
-
     const words = content.trim().split(/\s+/).length
-    const readTime = Math.ceil(words / 200)
-
     return {
       slug,
       title: data.title || 'Untitled',
@@ -73,11 +78,12 @@ export function getPostBySlug(slug: string): BlogPost | null {
       excerpt: data.excerpt || '',
       tags: data.tags || [],
       content,
-      readTime: `${readTime} min read`,
+      readTime: `${Math.ceil(words / 200)} min read`,
       author: data.author || 'Siddhant Dube',
       coverImage: data.coverImage,
-    } as BlogPost
-  } catch (error) {
+      tx_number: 0,
+    }
+  } catch {
     return null
   }
 }
