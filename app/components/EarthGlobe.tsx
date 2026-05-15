@@ -33,6 +33,8 @@ interface EarthColors {
   klMarker:         string   // ground station — primary accent
   issMarker:        string   // live tracking — visually distinct from KL
   markerScale:      number   // 1.0 = default; bumped in light mode for visibility
+  textureTint:      number   // hex; multiplied against the Blue Marble diffuse map
+  textureOpacity:   number   // 0–1; faint enough that wireframe still dominates
 }
 
 function earthColors(theme: 'dark' | 'light'): EarthColors {
@@ -45,6 +47,8 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
       klMarker:      '#b8860b',  // --instrument copper — matches accent system
       issMarker:     '#b91c1c',  // brick red — distinct from KL, reads on parchment
       markerScale:   1.2,        // slightly larger for visibility on light surface
+      textureTint:   0x8b6f3a,   // desaturated sepia — pulls continents into the parchment palette
+      textureOpacity: 0.15,      // very faint; etched-brass register wins over photo
     }
   }
   return {
@@ -55,6 +59,8 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
     klMarker:      '#38bdf8',  // --instrument cyan — ground station
     issMarker:     '#fbbf24',  // --warning amber — live tracking
     markerScale:   1.0,
+    textureTint:   0x1a3a5a,   // desaturated navy — kills the natural greens/blues
+    textureOpacity: 0.25,      // wireframe still dominates, continents recognizable on closer look
   }
 }
 
@@ -87,6 +93,14 @@ function EarthMesh({
   const meshRef = useRef<THREE.Mesh>(null)
   const geometry = useMemo(() => new THREE.IcosahedronGeometry(EARTH_RADIUS, 3), [])
 
+  // Blue Marble texture — loaded once, shared across re-renders and theme toggles.
+  // Non-suspending: starts loading on mount and appears in-place when ready.
+  const earthTexture = useMemo(() => {
+    const tex = new THREE.TextureLoader().load('/textures/earth-blue-marble.jpg')
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
+  }, [])
+
   // Accumulated rotation, advanced by delta-time only when auto-rotating.
   // Switching from "elapsed*rate" to "accumulator + dt*rate" prevents a jump
   // when resuming after a drag — paused frames don't add to the accumulator.
@@ -110,7 +124,28 @@ function EarthMesh({
   return (
     <mesh ref={meshRef} geometry={geometry}>
       <meshBasicMaterial color={colors.sphereFill} transparent opacity={colors.sphereOpacity} side={THREE.FrontSide} />
-      <lineSegments>
+
+      {/* Faint Blue Marble texture between the inner fill and the wireframe.
+          Sits at 0.99× the icosphere radius. depthTest:false is necessary
+          because the coincident inner-sphere material at radius 1.0× would
+          otherwise occlude this layer geometrically (texture sits inside it).
+          renderOrder=1 sequences it AFTER the inner sphere in the transparent
+          queue; wireframe (renderOrder=2) draws on top of this so its lines
+          stay crisp. depthWrite:false prevents this layer from interfering
+          with depth sort downstream. */}
+      <mesh renderOrder={1} raycast={() => null}>
+        <sphereGeometry args={[EARTH_RADIUS * 0.99, 32, 32]} />
+        <meshBasicMaterial
+          map={earthTexture}
+          color={colors.textureTint}
+          transparent
+          opacity={colors.textureOpacity}
+          depthWrite={false}
+          depthTest={false}
+        />
+      </mesh>
+
+      <lineSegments renderOrder={2}>
         <edgesGeometry args={[geometry]} />
         <lineBasicMaterial color={colors.wire} transparent opacity={colors.wireOpacity} />
       </lineSegments>
