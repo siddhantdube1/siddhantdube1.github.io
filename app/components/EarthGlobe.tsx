@@ -82,7 +82,7 @@ function EarthMesh({
   interactionRef,
 }: {
   colors: EarthColors
-  interactionRef: React.MutableRefObject<InteractionState>
+  interactionRef: React.RefObject<InteractionState>
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const geometry = useMemo(() => new THREE.IcosahedronGeometry(EARTH_RADIUS, 3), [])
@@ -164,10 +164,17 @@ function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
 
   const s = 0.06 * colors.markerScale
 
+  // transparent:true puts this material in Three.js's transparent render queue
+  // alongside the parchment sphere; renderOrder=999 then sorts ISS *after* the
+  // sphere within that queue. Without transparent:true the material sits in the
+  // opaque queue (rendered before the transparent queue), so the sphere always
+  // overpaints ISS at pixels inside its silhouette — i.e. when ISS is on the
+  // front or back of the globe. Cubic geometry (s³) keeps the marker visible
+  // from any view angle.
   return (
     <mesh ref={meshRef} position={[targetPos.x, targetPos.y, targetPos.z]} renderOrder={999}>
-      <boxGeometry args={[s, s, 0.02]} />
-      <meshBasicMaterial color={colors.issMarker} depthTest={false} />
+      <boxGeometry args={[s, s, s]} />
+      <meshBasicMaterial color={colors.issMarker} transparent opacity={1} depthTest={false} />
     </mesh>
   )
 }
@@ -178,7 +185,7 @@ interface SceneProps {
   issLat: number
   issLon: number
   colors: EarthColors
-  interactionRef: React.MutableRefObject<InteractionState>
+  interactionRef: React.RefObject<InteractionState>
 }
 
 function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
