@@ -10,6 +10,7 @@ import { PulsarMap } from './components/PulsarMap'
 import { DownlinkGallery, type Photo } from './components/DownlinkGallery'
 import { BootSequence } from './components/BootSequence'
 import { PhilosophyCrossfade } from './components/PhilosophyCrossfade'
+import { ConstellationOverlay } from './components/ConstellationOverlay'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -428,6 +429,9 @@ export default function Portfolio() {
 
       {/* Philosophy crossfades — scroll-triggered, pointer-events: none */}
       <PhilosophyCrossfade />
+
+      {/* Constellation overlay — hairline scroll connector between section h2s */}
+      <ConstellationOverlay />
 
       {/* Nav */}
       <NavBar />
