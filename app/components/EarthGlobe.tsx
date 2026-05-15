@@ -59,7 +59,7 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
     klMarker:      '#38bdf8',  // --instrument cyan — ground station
     issMarker:     '#fbbf24',  // --warning amber — live tracking
     markerScale:   1.0,
-    textureTint:   0x1a3a5a,   // desaturated navy — kills the natural greens/blues
+    textureTint:   0x3a6a8a,   // muted navy — brighter R/G channels let continent landmasses register; B still dominates for void aesthetic
     textureOpacity: 0.50,      // wireframe still dominates, continents recognizable on closer look
   }
 }
@@ -83,14 +83,7 @@ function issLatLonToVec3(lat: number, lon: number): THREE.Vector3 {
 
 // ─── Wireframe Earth ─────────────────────────────────────────────────────────
 
-function EarthMesh({
-  colors,
-  interactionRef,
-}: {
-  colors: EarthColors
-  interactionRef: React.RefObject<InteractionState>
-}) {
-  const meshRef = useRef<THREE.Mesh>(null)
+function EarthMesh({ colors }: { colors: EarthColors }) {
   const geometry = useMemo(() => new THREE.IcosahedronGeometry(EARTH_RADIUS, 3), [])
 
   // Blue Marble texture — loaded once, shared across re-renders and theme toggles.
@@ -101,28 +94,8 @@ function EarthMesh({
     return tex
   }, [])
 
-  // Accumulated rotation, advanced by delta-time only when auto-rotating.
-  // Switching from "elapsed*rate" to "accumulator + dt*rate" prevents a jump
-  // when resuming after a drag — paused frames don't add to the accumulator.
-  const rotationRef = useRef(0)
-  const lastFrameRef = useRef<number | null>(null)
-
-  useFrame(() => {
-    if (!meshRef.current) return
-    const now = performance.now()
-    const dt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
-    lastFrameRef.current = now
-
-    const { isInteracting, lastInteractionAt } = interactionRef.current
-    const idleMs = now - lastInteractionAt
-    const shouldAutoRotate = !isInteracting && idleMs > INTERACTION_COOLDOWN_MS
-
-    if (shouldAutoRotate) rotationRef.current += dt * EARTH_RAD_PER_SEC
-    meshRef.current.rotation.y = rotationRef.current
-  })
-
   return (
-    <mesh ref={meshRef} geometry={geometry}>
+    <mesh geometry={geometry}>
       <meshBasicMaterial color={colors.sphereFill} transparent opacity={colors.sphereOpacity} side={THREE.FrontSide} />
 
       {/* Faint Blue Marble texture between the inner fill and the wireframe.
@@ -224,12 +197,36 @@ interface SceneProps {
 }
 
 function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
+  // Rotation lives at the group level so Earth, KL, and ISS all share one
+  // transform — markers stay locked to their geographic positions as the
+  // globe spins (KL stays over Kuala Lumpur; ISS stays over its sub-satellite
+  // point in the Earth-fixed frame, which is what the API reports).
+  const groupRef = useRef<THREE.Group>(null)
+  const rotationRef = useRef(0)
+  const lastFrameRef = useRef<number | null>(null)
+
+  useFrame(() => {
+    if (!groupRef.current) return
+    const now = performance.now()
+    const dt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
+    lastFrameRef.current = now
+
+    const { isInteracting, lastInteractionAt } = interactionRef.current
+    const idleMs = now - lastInteractionAt
+    const shouldAutoRotate = !isInteracting && idleMs > INTERACTION_COOLDOWN_MS
+
+    if (shouldAutoRotate) rotationRef.current += dt * EARTH_RAD_PER_SEC
+    groupRef.current.rotation.y = rotationRef.current
+  })
+
   return (
     <>
       <ambientLight intensity={0.2} />
-      <EarthMesh colors={colors} interactionRef={interactionRef} />
-      <KLMarker colors={colors} />
-      <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+      <group ref={groupRef}>
+        <EarthMesh colors={colors} />
+        <KLMarker colors={colors} />
+        <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+      </group>
       <OrbitControls
         enableZoom={false}
         enablePan={false}
