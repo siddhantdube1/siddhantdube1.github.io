@@ -9,7 +9,7 @@ const SECTION_IDS = ['ground', 'manifest', 'log', 'systems', 'payloads', 'downli
 const VIEWPORT_SLOP_PX = 200
 // Spec says 0.15–0.25 opacity. Pick the midpoint and let the per-heading
 // fade lerp scale it down toward 0 when leaving the slop band.
-const BASE_OPACITY = 0.2
+const BASE_OPACITY = 0.15
 // Lerp factor toward target opacity per frame. ~0.12 reaches ~95% in 25 frames
 // (~400ms at 60fps) — matches the spec's "~400ms fade".
 const FADE_LERP = 0.12
