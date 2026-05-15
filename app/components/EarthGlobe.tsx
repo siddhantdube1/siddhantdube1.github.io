@@ -60,7 +60,7 @@ function earthColors(theme: 'dark' | 'light'): EarthColors {
     issMarker:     '#fbbf24',  // --warning amber — live tracking
     markerScale:   1.0,
     textureTint:   0x1a3a5a,   // desaturated navy — kills the natural greens/blues
-    textureOpacity: 0.25,      // wireframe still dominates, continents recognizable on closer look
+    textureOpacity: 0.50,      // wireframe still dominates, continents recognizable on closer look
   }
 }
 
