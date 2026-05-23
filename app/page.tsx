@@ -12,6 +12,7 @@ import { BootSequence } from './components/BootSequence'
 import { PhilosophyCrossfade } from './components/PhilosophyCrossfade'
 import { ConstellationOverlay } from './components/ConstellationOverlay'
 import { ThreeBodySim } from './components/ThreeBodySim'
+import { GradientDescentSim } from './components/GradientDescentSim'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -620,35 +621,46 @@ export default function Portfolio() {
           <SectionHeading title="ONBOARD SYSTEMS" sub="// FOUR SUBSYSTEMS, ALL NOMINAL" />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SYSTEMS.map(sys => (
-              <div
-                key={sys.name}
-                className="rounded border p-5"
-                style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-mono-display text-xs font-bold tracking-widest" style={{ color: 'var(--ink)' }}>
-                    {sys.name}
-                  </p>
-                  <span className="flex items-center gap-1 font-mono-display text-[10px]" style={{ color: 'var(--instrument)' }}>
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--instrument)' }} />
-                    NOMINAL
-                  </span>
-                </div>
-                <p className="font-mono-display text-[10px] mb-4" style={{ color: 'var(--ink-dim)' }}>{sys.tagline}</p>
-                <div className="flex flex-wrap gap-2">
-                  {sys.items.map(item => (
-                    <span
-                      key={item}
-                      className="font-mono-display text-[10px] px-2 py-1 rounded border hover-brighten cursor-default transition-colors duration-150"
-                      style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
-                    >
-                      {item}
+            {SYSTEMS.map(sys => {
+              const isCompute = sys.name === 'COMPUTE / INFERENCE'
+              return (
+                <div
+                  key={sys.name}
+                  className="rounded border p-5 relative"
+                  style={{ borderColor: 'var(--inert)', background: 'var(--bg-elevated)' }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-mono-display text-xs font-bold tracking-widest" style={{ color: 'var(--ink)' }}>
+                      {sys.name}
+                    </p>
+                    <span className="flex items-center gap-1 font-mono-display text-[10px]" style={{ color: 'var(--instrument)' }}>
+                      <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--instrument)' }} />
+                      NOMINAL
                     </span>
-                  ))}
+                  </div>
+                  <p className="font-mono-display text-[10px] mb-4" style={{ color: 'var(--ink-dim)' }}>{sys.tagline}</p>
+                  <div
+                    className="flex flex-wrap gap-2"
+                    style={{ paddingBottom: isCompute ? 92 : 0 }}
+                  >
+                    {sys.items.map(item => (
+                      <span
+                        key={item}
+                        className="font-mono-display text-[10px] px-2 py-1 rounded border hover-brighten cursor-default transition-colors duration-150"
+                        style={{ borderColor: 'var(--inert)', color: 'var(--ink-dim)' }}
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                  {isCompute && (
+                    <div className="absolute bottom-3 right-3 pointer-events-none" aria-hidden="true">
+                      <GradientDescentSim />
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>
