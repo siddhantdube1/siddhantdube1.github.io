@@ -13,6 +13,7 @@ import { PhilosophyCrossfade } from './components/PhilosophyCrossfade'
 import { ConstellationOverlay } from './components/ConstellationOverlay'
 import { ThreeBodySim } from './components/ThreeBodySim'
 import { GradientDescentSim } from './components/GradientDescentSim'
+import { AttentionViz } from './components/AttentionViz'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -538,10 +539,13 @@ export default function Portfolio() {
               </div>
 
               {/* Inscription */}
-              <div className="pt-4 border-t" style={{ borderColor: 'var(--inert)' }}>
+              <div className="pt-4 border-t flex items-center justify-between gap-4 flex-wrap" style={{ borderColor: 'var(--inert)' }}>
                 <p className="font-serif-inscription italic" style={{ color: 'var(--ink-dim)', fontSize: '1rem' }}>
                   &ldquo;It from bit.&rdquo; — Wheeler
                 </p>
+                <div style={{ width: 140, height: 60, flexShrink: 0 }} aria-hidden="true">
+                  <AttentionViz />
+                </div>
               </div>
             </div>
           </div>
