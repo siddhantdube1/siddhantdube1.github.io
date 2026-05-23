@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 
 // Non-convex loss: sum of 4 Gaussians (3 wells + central bump) → global min,
 // 2 shallower local minima, and a saddle so random starts land in different basins.
-const DISPLAY = 80, WORLD_HALF = 1.0, LR = 0.02
+const WORLD_HALF = 1.0, LR = 0.02
 const MAX_STEPS = 300, CONVERGE_GRAD = 0.05, TRAIL_LEN = 30
 const LEVELS = [-0.85, -0.55, -0.25, 0.0, 0.2]
 
@@ -59,13 +59,13 @@ export function GradientDescentSim() {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const dpr = window.devicePixelRatio || 1
-    const N = Math.round(DISPLAY * dpr)        // internal pixel grid
+    // Canvas fills its wrapper via CSS; we read the resolved display size and
+    // pick an internal pixel grid at DPR resolution. No setTransform — render
+    // directly in N×N pixel space so putImageData and line draws agree.
+    const display = Math.min(canvas.clientWidth, canvas.clientHeight) || 80
+    const N = Math.round(display * dpr)
     canvas.width = N
     canvas.height = N
-    canvas.style.width = `${DISPLAY}px`
-    canvas.style.height = `${DISPLAY}px`
-    // No setTransform — render directly in N×N pixel space so putImageData
-    // and our line drawing both speak the same coordinate system.
 
     const pxToWorld = (px: number) => (px / N - 0.5) * 2 * WORLD_HALF
     const worldToPx = (x: number) => (x / (2 * WORLD_HALF) + 0.5) * N
@@ -193,7 +193,7 @@ export function GradientDescentSim() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      style={{ display: 'block' }}
+      style={{ width: '100%', height: '100%', display: 'block' }}
     />
   )
 }
