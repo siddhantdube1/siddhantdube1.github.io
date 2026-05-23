@@ -11,6 +11,7 @@ import { DownlinkGallery, type Photo } from './components/DownlinkGallery'
 import { BootSequence } from './components/BootSequence'
 import { PhilosophyCrossfade } from './components/PhilosophyCrossfade'
 import { ConstellationOverlay } from './components/ConstellationOverlay'
+import { ThreeBodySim } from './components/ThreeBodySim'
 
 // ─── Contact form (mechanics unchanged, labels reframed) ──────────────────────
 
@@ -605,6 +606,13 @@ export default function Portfolio() {
           </div>
         </div>
       </section>
+
+      {/* Negative-space flourish: unlabelled, no frame, right-aligned. */}
+      <div className="max-w-7xl mx-auto px-4 flex justify-end" aria-hidden="true">
+        <div style={{ width: 'clamp(100px, 12vw, 140px)', aspectRatio: '1' }}>
+          <ThreeBodySim />
+        </div>
+      </div>
 
       {/* ── ONBOARD SYSTEMS ───────────────────────────────────────────────────── */}
       <section id="systems" className="py-24 px-4 relative z-10" aria-label="Onboard Systems">
