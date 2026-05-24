@@ -18,12 +18,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('theme') as Theme | null
-    if (stored === 'light' || stored === 'dark') {
-      setTheme(stored)
-    }
-    // If nothing stored, the inline script in layout.tsx already applied dark;
-    // state default of 'dark' is correct.
+    // Always dark. Clear any stored light preference so returning visitors are
+    // not sent back to Daylight Recovery on load.
+    localStorage.removeItem('theme')
   }, [])
 
   useEffect(() => {

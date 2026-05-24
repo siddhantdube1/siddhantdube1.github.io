@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
-import { useTheme } from './ThemeProvider'
-
 const NAV_LINKS = [
   { label: 'GROUND',   href: '#ground'   },
   { label: 'MANIFEST', href: '#manifest'  },
@@ -15,30 +13,6 @@ const NAV_LINKS = [
   { label: 'TX',       href: '/blog'      },
   { label: 'CHANNEL',  href: '#channel'   },
 ]
-
-function MoonIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M15.5 10.5A7 7 0 0 1 7.5 2.5a7 7 0 1 0 8 8z" />
-    </svg>
-  )
-}
-
-function SunIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="9" cy="9" r="3.5" />
-      <line x1="9"    y1="1"    x2="9"    y2="3"    />
-      <line x1="9"    y1="15"   x2="9"    y2="17"   />
-      <line x1="1"    y1="9"    x2="3"    y2="9"    />
-      <line x1="15"   y1="9"    x2="17"   y2="9"    />
-      <line x1="3.05" y1="3.05" x2="4.46" y2="4.46" />
-      <line x1="13.54" y1="13.54" x2="14.95" y2="14.95" />
-      <line x1="3.05" y1="14.95" x2="4.46" y2="13.54" />
-      <line x1="13.54" y1="4.46" x2="14.95" y2="3.05" />
-    </svg>
-  )
-}
 
 function scrollToSection(href: string) {
   if (href.startsWith('#')) {
@@ -51,7 +25,6 @@ function scrollToSection(href: string) {
 }
 
 export function NavBar() {
-  const { theme, toggleTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('ground')
 
@@ -129,18 +102,8 @@ export function NavBar() {
           })}
         </div>
 
-        {/* Theme toggle + mobile menu */}
+        {/* Mobile menu */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded transition-colors duration-150"
-            style={{ color: 'var(--ink-dim)' }}
-            aria-label={theme === 'dark' ? 'Switch to Daylight Recovery' : 'Switch to Night Ops'}
-            title={theme === 'dark' ? 'DAYLIGHT RECOVERY' : 'NIGHT OPS'}
-          >
-            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-          </button>
-
           <button
             className="md:hidden p-2 rounded"
             style={{ color: 'var(--ink-dim)' }}
