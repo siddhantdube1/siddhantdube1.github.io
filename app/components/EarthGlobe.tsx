@@ -245,15 +245,16 @@ function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
   )
 }
 
-// ─── Mobile scene (no OrbitControls, no interaction state) ───────────────────
+// ─── Mobile scene ────────────────────────────────────────────────────────────
 
 interface MobileSceneProps {
   issLat: number
   issLon: number
   colors: EarthColors
+  interactionRef: React.RefObject<InteractionState>
 }
 
-function MobileScene({ issLat, issLon, colors }: MobileSceneProps) {
+function MobileScene({ issLat, issLon, colors, interactionRef }: MobileSceneProps) {
   const groupRef = useRef<THREE.Group>(null)
   const rotationRef = useRef(0)
   const lastFrameRef = useRef<number | null>(null)
@@ -267,7 +268,12 @@ function MobileScene({ issLat, issLon, colors }: MobileSceneProps) {
     const rawDt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
     const dt = Math.min(rawDt, 0.1)
     lastFrameRef.current = now
-    rotationRef.current += dt * EARTH_RAD_PER_SEC
+
+    const { isInteracting, lastInteractionAt } = interactionRef.current
+    const idleMs = now - lastInteractionAt
+    const shouldAutoRotate = !isInteracting && idleMs > INTERACTION_COOLDOWN_MS
+
+    if (shouldAutoRotate) rotationRef.current += dt * EARTH_RAD_PER_SEC
     groupRef.current.rotation.y = rotationRef.current
   })
 
@@ -275,14 +281,29 @@ function MobileScene({ issLat, issLon, colors }: MobileSceneProps) {
     <>
       <ambientLight intensity={0.2} />
       <group ref={groupRef}>
-        {/* Same EarthMesh as desktop — identical icosahedron detail, texture,
-            and inner sphere. Mobile differences (no OrbitControls, no
-            interaction state, IO-paused frameloop, touch-action wrapper) live
-            outside this component so the globe itself stays in lockstep. */}
         <EarthMesh colors={colors} />
         <KLMarker colors={colors} />
         <ISSMarker lat={issLat} lon={issLon} colors={colors} />
       </group>
+      {/* Polar angles locked to π/2 → camera stays on equatorial plane.
+          One-finger horizontal swipes orbit left/right only; vertical swipes
+          fall through to the browser via touch-action: pan-y on the wrapper. */}
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        enableDamping
+        dampingFactor={0.05}
+        rotateSpeed={0.4}
+        minPolarAngle={Math.PI / 2}
+        maxPolarAngle={Math.PI / 2}
+        onStart={() => {
+          interactionRef.current.isInteracting = true
+        }}
+        onEnd={() => {
+          interactionRef.current.isInteracting = false
+          interactionRef.current.lastInteractionAt = performance.now()
+        }}
+      />
     </>
   )
 }
@@ -356,16 +377,21 @@ function DesktopEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
 
 // ─── Mobile globe ────────────────────────────────────────────────────────────
 // Differences from desktop:
-//   • touch-action: pan-y on wrapper → vertical scroll always wins over any
-//     touch the canvas might receive. This is the critical bug-fix for the
-//     "scroll dies when finger lands on hero" issue.
+//   • touch-action: pan-y pinch-zoom on wrapper → vertical scroll and pinch
+//     are browser-native; horizontal swipes reach OrbitControls via pointer
+//     events (browser fires pointercancel for vertical gestures, so OrbitControls
+//     only sees the horizontal ones).
 //   • Canvas frameloop toggled by IntersectionObserver → no GPU work when the
 //     hero is off-screen.
-//   • No OrbitControls, no interactionRef, no texture/inner-fill layers.
+//   • rotateSpeed 0.4 (vs 0.5 desktop) — slightly slower for thumb comfort.
 
 function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(true)
+  const interactionRef = useRef<InteractionState>({
+    isInteracting: false,
+    lastInteractionAt: -Infinity,
+  })
 
   useEffect(() => {
     const el = wrapperRef.current
@@ -386,18 +412,18 @@ function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
         maxWidth: 280,
         aspectRatio: '1',
         maxHeight: 280,
-        touchAction: 'pan-y',
+        touchAction: 'pan-y pinch-zoom',
       }}
       aria-hidden="true"
     >
       <Canvas
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
-        style={{ background: 'transparent', pointerEvents: 'none' }}
+        style={{ background: 'transparent' }}
         frameloop={inView ? 'always' : 'never'}
         tabIndex={-1}
       >
-        <MobileScene issLat={issLat} issLon={issLon} colors={colors} />
+        <MobileScene issLat={issLat} issLon={issLon} colors={colors} interactionRef={interactionRef} />
       </Canvas>
     </div>
   )
