@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { useTheme } from './ThemeProvider'
 
 const EarthGlobe = dynamic(
   () => import('./EarthGlobe').then(m => ({ default: m.EarthGlobe })),
@@ -26,7 +25,6 @@ function EarthPlaceholder() {
 }
 
 export function EarthGlobeWrapper() {
-  const { theme } = useTheme()
   const [issLat, setIssLat] = useState(-23.4)
   const [issLon, setIssLon] = useState(117.8)
   const [reducedMotion, setReducedMotion] = useState(false)
@@ -61,12 +59,11 @@ export function EarthGlobeWrapper() {
   return (
     <div
       className="flex items-center justify-center"
-      aria-label="Wireframe Earth showing Kuala Lumpur ground marker and live ISS position"
+      aria-label="Photoreal Earth with real-time day/night terminator, Kuala Lumpur ground marker, and live ISS position"
     >
       <EarthGlobe
         issLat={issLat}
         issLon={issLon}
-        theme={theme}
         reducedMotion={reducedMotion}
         isMobile={isMobile}
       />

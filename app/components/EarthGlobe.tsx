@@ -4,67 +4,34 @@ import { useRef, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
+import * as Astronomy from 'astronomy-engine'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EARTH_RADIUS = 2
-const ISS_ALTITUDE = 0.12   // scaled altitude above surface
-const KL_LAT_DEG  = 3.139
-const KL_LON_DEG  = 101.687
-// Earth sidereal day: 86164.1 seconds → radians/second
+const ISS_ALTITUDE = 0.12
+const KL_LAT_DEG = 3.139
+const KL_LON_DEG = 101.687
+// Earth sidereal day: 86164.1 s → radians/second
 const EARTH_RAD_PER_SEC = (2 * Math.PI) / 86164.1
-// Resume sidereal auto-rotation this long after the user releases the drag.
 const INTERACTION_COOLDOWN_MS = 3000
+// Sun direction shifts ~15°/hour, so 60s updates are well under 0.3° drift.
+const SUN_UPDATE_MS = 60_000
 
-// ─── Shared interaction state ─────────────────────────────────────────────────
+const STAR_COUNT  = 1200
+const STAR_RADIUS = 30   // ~15× Earth radius; far enough to read as backdrop
+
+const KL_COLOR  = '#38bdf8'
+const ISS_COLOR = '#fbbf24'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface InteractionState {
   isInteracting: boolean
-  lastInteractionAt: number  // performance.now() timestamp; -Infinity = never
+  lastInteractionAt: number   // -Infinity = never
 }
 
-// ─── Theme color palettes ─────────────────────────────────────────────────────
-
-interface EarthColors {
-  sphereFill:       string
-  sphereOpacity:    number
-  wire:             string
-  wireOpacity:      number
-  klMarker:         string   // ground station — primary accent
-  issMarker:        string   // live tracking — visually distinct from KL
-  markerScale:      number   // 1.0 = default; bumped in light mode for visibility
-  textureTint:      number   // hex; multiplied against the Blue Marble diffuse map
-  textureOpacity:   number   // 0–1; faint enough that wireframe still dominates
-}
-
-function earthColors(theme: 'dark' | 'light'): EarthColors {
-  if (theme === 'light') {
-    return {
-      sphereFill:    '#ebe1cf',  // --bg-elevated parchment
-      sphereOpacity: 1.0,
-      wire:          '#b8860b',  // --instrument copper/brass
-      wireOpacity:   0.5,
-      klMarker:      '#b8860b',  // --instrument copper — matches accent system
-      issMarker:     '#b91c1c',  // brick red — distinct from KL, reads on parchment
-      markerScale:   1.2,        // slightly larger for visibility on light surface
-      textureTint:   0x8b6f3a,   // desaturated sepia — pulls continents into the parchment palette
-      textureOpacity: 0.15,      // very faint; etched-brass register wins over photo
-    }
-  }
-  return {
-    sphereFill:    '#04060d',  // --bg void
-    sphereOpacity: 0.85,
-    wire:          '#38bdf8',  // --instrument cyan
-    wireOpacity:   0.55,
-    klMarker:      '#38bdf8',  // --instrument cyan — ground station
-    issMarker:     '#fbbf24',  // --warning amber — live tracking
-    markerScale:   1.0,
-    textureTint:   0x3a6a8a,   // muted navy — brighter R/G channels let continent landmasses register; B still dominates for void aesthetic
-    textureOpacity: 0.50,      // wireframe still dominates, continents recognizable on closer look
-  }
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Geometry helpers ─────────────────────────────────────────────────────────
 
 function latLonToVec3(lat: number, lon: number, r: number): THREE.Vector3 {
   const phi   = (90 - lat) * (Math.PI / 180)
@@ -76,62 +43,148 @@ function latLonToVec3(lat: number, lon: number, r: number): THREE.Vector3 {
   )
 }
 
-// Convert ISS lat/lon to 3D position on sphere at ISS altitude
 function issLatLonToVec3(lat: number, lon: number): THREE.Vector3 {
   return latLonToVec3(lat, lon, EARTH_RADIUS + ISS_ALTITUDE)
 }
 
-// ─── Wireframe Earth ─────────────────────────────────────────────────────────
+// ─── Sun direction in Earth body-fixed frame ──────────────────────────────────
+// Subsolar point: the geographic (lat, lon) where the sun is directly overhead
+// at the given instant. Subsolar lat = sun's declination; subsolar lon =
+// (RA_sun − GAST) × 15°. Passing this through latLonToVec3 gives the sun's
+// direction in the same body-fixed frame as the texture mapping, so the shader
+// terminator aligns with real geography (KL on the day side at KL noon, etc.).
+// The group's visual rotation does not affect this calculation because the
+// shader uses object-local normals; both N and L live in body frame together.
+function computeSunDirection(date: Date, out: THREE.Vector3): void {
+  const sunJ2000  = Astronomy.GeoVector(Astronomy.Body.Sun, date, true)
+  const sunOfDate = Astronomy.RotateVector(Astronomy.Rotation_EQJ_EQD(date), sunJ2000)
+  const eq   = Astronomy.EquatorFromVector(sunOfDate)
+  const gast = Astronomy.SiderealTime(date)   // hours
+  let lon = (eq.ra - gast) * 15               // degrees
+  while (lon >  180) lon -= 360
+  while (lon < -180) lon += 360
+  const v = latLonToVec3(eq.dec, lon, 1)
+  out.copy(v)
+}
 
-function EarthMesh({ colors }: { colors: EarthColors }) {
-  const geometry = useMemo(() => new THREE.IcosahedronGeometry(EARTH_RADIUS, 3), [])
+// ─── Shaders ──────────────────────────────────────────────────────────────────
 
-  // Blue Marble texture — loaded once, shared across re-renders and theme toggles.
-  // Non-suspending: starts loading on mount and appears in-place when ready.
-  const earthTexture = useMemo(() => {
-    const tex = new THREE.TextureLoader().load('/textures/earth-blue-marble.jpg')
-    tex.colorSpace = THREE.SRGBColorSpace
-    return tex
+const EARTH_VERT = /* glsl */ `
+  varying vec3 vNormalLocal;
+  varying vec2 vUv;
+  void main() {
+    vNormalLocal = normal;
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+// Lighting baked into the fragment shader instead of a separate DirectionalLight,
+// because ShaderMaterial doesn't read Three's light uniforms. NdotL drives both
+// the directional falloff (0.95 coefficient) and the small ambient floor (0.05).
+// The smoothstep band ±0.10 spans ~11° of N·L either side of the terminator
+// great circle — the twilight zone where day and night textures cross-fade.
+const EARTH_FRAG = /* glsl */ `
+  varying vec3 vNormalLocal;
+  varying vec2 vUv;
+  uniform sampler2D uDayTexture;
+  uniform sampler2D uNightTexture;
+  uniform vec3 uSunDirection;
+  void main() {
+    vec3 N = normalize(vNormalLocal);
+    float NdotL = dot(N, uSunDirection);
+    float dayBlend = smoothstep(-0.10, 0.10, NdotL);
+    vec3 day   = texture2D(uDayTexture,   vUv).rgb;
+    vec3 night = texture2D(uNightTexture, vUv).rgb;
+    // 0.05 ambient + Lambertian sun term
+    vec3 dayLit = day * (0.05 + 0.95 * max(NdotL, 0.0));
+    vec3 color  = mix(night, dayLit, dayBlend);
+    gl_FragColor = vec4(color, 1.0);
+  }
+`
+
+// ─── Photoreal Earth (day/night shader sphere) ────────────────────────────────
+
+function PhotorealEarth() {
+  const dayTexture = useMemo(() => {
+    const t = new THREE.TextureLoader().load('/textures/earth-day.jpg')
+    t.colorSpace = THREE.SRGBColorSpace
+    return t
+  }, [])
+  const nightTexture = useMemo(() => {
+    const t = new THREE.TextureLoader().load('/textures/earth-night.jpg')
+    t.colorSpace = THREE.SRGBColorSpace
+    return t
   }, [])
 
+  const uniforms = useMemo(() => ({
+    uDayTexture:   { value: dayTexture },
+    uNightTexture: { value: nightTexture },
+    uSunDirection: { value: new THREE.Vector3(1, 0, 0) },
+  }), [dayTexture, nightTexture])
+
+  useEffect(() => {
+    computeSunDirection(new Date(), uniforms.uSunDirection.value)
+    const id = setInterval(() => {
+      computeSunDirection(new Date(), uniforms.uSunDirection.value)
+    }, SUN_UPDATE_MS)
+    return () => clearInterval(id)
+  }, [uniforms])
+
   return (
-    <mesh geometry={geometry}>
-      <meshBasicMaterial color={colors.sphereFill} transparent opacity={colors.sphereOpacity} side={THREE.FrontSide} />
-
-      {/* Faint Blue Marble texture between the inner fill and the wireframe.
-          Sits at 0.99× the icosphere radius. depthTest:false is necessary
-          because the coincident inner-sphere material at radius 1.0× would
-          otherwise occlude this layer geometrically (texture sits inside it).
-          renderOrder=1 sequences it AFTER the inner sphere in the transparent
-          queue; wireframe (renderOrder=2) draws on top of this so its lines
-          stay crisp. depthWrite:false prevents this layer from interfering
-          with depth sort downstream. */}
-      <mesh renderOrder={1} raycast={() => null}>
-        <sphereGeometry args={[EARTH_RADIUS * 0.99, 32, 32]} />
-        <meshBasicMaterial
-          map={earthTexture}
-          color={colors.textureTint}
-          transparent
-          opacity={colors.textureOpacity}
-          depthWrite={false}
-          depthTest={false}
-        />
-      </mesh>
-
-      <lineSegments renderOrder={2}>
-        <edgesGeometry args={[geometry]} />
-        <lineBasicMaterial color={colors.wire} transparent opacity={colors.wireOpacity} />
-      </lineSegments>
+    <mesh>
+      <sphereGeometry args={[EARTH_RADIUS, 64, 64]} />
+      <shaderMaterial
+        uniforms={uniforms}
+        vertexShader={EARTH_VERT}
+        fragmentShader={EARTH_FRAG}
+      />
     </mesh>
   )
 }
 
-// ─── KL ground marker ────────────────────────────────────────────────────────
+// ─── Star field ───────────────────────────────────────────────────────────────
+// Points distributed uniformly on a sphere at STAR_RADIUS. sizeAttenuation
+// off → each star is a constant 1.5px regardless of camera distance. Opacity
+// 0.5 + faint blue tint reads as atmosphere, not decoration. depthWrite off
+// keeps stars from poking holes in the depth buffer behind the Earth.
 
-function KLMarker({ colors }: { colors: EarthColors }) {
+function StarField() {
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(STAR_COUNT * 3)
+    for (let i = 0; i < STAR_COUNT; i++) {
+      // Uniform distribution on a sphere: pick u∈[-1,1] (=cos φ), azimuth θ∈[0,2π).
+      const u = Math.random() * 2 - 1
+      const theta = Math.random() * Math.PI * 2
+      const s = Math.sqrt(1 - u * u)
+      positions[i*3]     = STAR_RADIUS * s * Math.cos(theta)
+      positions[i*3 + 1] = STAR_RADIUS * u
+      positions[i*3 + 2] = STAR_RADIUS * s * Math.sin(theta)
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    return g
+  }, [])
+
+  return (
+    <points geometry={geometry}>
+      <pointsMaterial
+        color={0xe8eefa}
+        size={1.5}
+        sizeAttenuation={false}
+        transparent
+        opacity={0.5}
+        depthWrite={false}
+      />
+    </points>
+  )
+}
+
+// ─── KL ground marker ─────────────────────────────────────────────────────────
+
+function KLMarker() {
   const meshRef = useRef<THREE.Mesh>(null)
   const position = useMemo(() => latLonToVec3(KL_LAT_DEG, KL_LON_DEG, EARTH_RADIUS * 1.015), [])
-  const r = 0.045 * colors.markerScale
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
@@ -140,27 +193,17 @@ function KLMarker({ colors }: { colors: EarthColors }) {
     mat.opacity = 0.5 + 0.5 * Math.sin(t * 3)
   })
 
-  // renderOrder forces this mesh to draw AFTER the sphere; depthTest:false on
-  // the material then keeps the pixels regardless of the depth buffer. Without
-  // both, the opaque sphere (transparent:true, opacity:1 in light mode) draws
-  // over markers on its far side via the transparent queue's back-to-front sort.
   return (
     <mesh ref={meshRef} position={position} renderOrder={999}>
-      <sphereGeometry args={[r, 8, 8]} />
-      <meshBasicMaterial color={colors.klMarker} transparent opacity={1} depthTest={false} />
+      <sphereGeometry args={[0.045, 8, 8]} />
+      <meshBasicMaterial color={KL_COLOR} transparent opacity={1} depthTest={false} />
     </mesh>
   )
 }
 
-// ─── ISS marker ──────────────────────────────────────────────────────────────
+// ─── ISS marker ───────────────────────────────────────────────────────────────
 
-interface ISSMarkerProps {
-  lat: number
-  lon: number
-  colors: EarthColors
-}
-
-function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
+function ISSMarker({ lat, lon }: { lat: number; lon: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const targetPos = useMemo(() => issLatLonToVec3(lat, lon), [lat, lon])
 
@@ -170,37 +213,23 @@ function ISSMarker({ lat, lon, colors }: ISSMarkerProps) {
     }
   }, [targetPos])
 
-  const s = 0.06 * colors.markerScale
-
-  // transparent:true puts this material in Three.js's transparent render queue
-  // alongside the parchment sphere; renderOrder=999 then sorts ISS *after* the
-  // sphere within that queue. Without transparent:true the material sits in the
-  // opaque queue (rendered before the transparent queue), so the sphere always
-  // overpaints ISS at pixels inside its silhouette — i.e. when ISS is on the
-  // front or back of the globe. Cubic geometry (s³) keeps the marker visible
-  // from any view angle.
   return (
     <mesh ref={meshRef} position={[targetPos.x, targetPos.y, targetPos.z]} renderOrder={999}>
-      <boxGeometry args={[s, s, s]} />
-      <meshBasicMaterial color={colors.issMarker} transparent opacity={1} depthTest={false} />
+      <boxGeometry args={[0.06, 0.06, 0.06]} />
+      <meshBasicMaterial color={ISS_COLOR} transparent opacity={1} depthTest={false} />
     </mesh>
   )
 }
 
-// ─── Scene ────────────────────────────────────────────────────────────────────
+// ─── Desktop scene ────────────────────────────────────────────────────────────
 
 interface SceneProps {
   issLat: number
   issLon: number
-  colors: EarthColors
   interactionRef: React.RefObject<InteractionState>
 }
 
-function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
-  // Rotation lives at the group level so Earth, KL, and ISS all share one
-  // transform — markers stay locked to their geographic positions as the
-  // globe spins (KL stays over Kuala Lumpur; ISS stays over its sub-satellite
-  // point in the Earth-fixed frame, which is what the API reports).
+function Scene({ issLat, issLon, interactionRef }: SceneProps) {
   const groupRef = useRef<THREE.Group>(null)
   const rotationRef = useRef(0)
   const lastFrameRef = useRef<number | null>(null)
@@ -221,12 +250,12 @@ function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
 
   return (
     <>
-      <ambientLight intensity={0.2} />
       <group ref={groupRef}>
-        <EarthMesh colors={colors} />
-        <KLMarker colors={colors} />
-        <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+        <PhotorealEarth />
+        <KLMarker />
+        <ISSMarker lat={issLat} lon={issLon} />
       </group>
+      <StarField />
       <OrbitControls
         enableZoom={false}
         enablePan={false}
@@ -245,16 +274,9 @@ function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
   )
 }
 
-// ─── Mobile scene ────────────────────────────────────────────────────────────
+// ─── Mobile scene ─────────────────────────────────────────────────────────────
 
-interface MobileSceneProps {
-  issLat: number
-  issLon: number
-  colors: EarthColors
-  interactionRef: React.RefObject<InteractionState>
-}
-
-function MobileScene({ issLat, issLon, colors, interactionRef }: MobileSceneProps) {
+function MobileScene({ issLat, issLon, interactionRef }: SceneProps) {
   const groupRef = useRef<THREE.Group>(null)
   const rotationRef = useRef(0)
   const lastFrameRef = useRef<number | null>(null)
@@ -262,9 +284,9 @@ function MobileScene({ issLat, issLon, colors, interactionRef }: MobileSceneProp
   useFrame(() => {
     if (!groupRef.current) return
     const now = performance.now()
-    // Clamp dt — when Canvas frameloop flips back from 'never' (after the hero
-    // scrolls back into view), the first frame's raw dt would otherwise be the
-    // entire off-screen duration, causing a visible rotation jump.
+    // Clamp dt — when Canvas frameloop flips back from 'never' after the hero
+    // scrolls into view, the first frame's raw dt would otherwise be the entire
+    // off-screen duration, causing a visible rotation jump.
     const rawDt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
     const dt = Math.min(rawDt, 0.1)
     lastFrameRef.current = now
@@ -279,15 +301,15 @@ function MobileScene({ issLat, issLon, colors, interactionRef }: MobileSceneProp
 
   return (
     <>
-      <ambientLight intensity={0.2} />
       <group ref={groupRef}>
-        <EarthMesh colors={colors} />
-        <KLMarker colors={colors} />
-        <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+        <PhotorealEarth />
+        <KLMarker />
+        <ISSMarker lat={issLat} lon={issLon} />
       </group>
+      <StarField />
       {/* Polar angles locked to π/2 → camera stays on equatorial plane.
-          One-finger horizontal swipes orbit left/right only; vertical swipes
-          fall through to the browser via touch-action: pan-y on the wrapper. */}
+          Horizontal swipes orbit left/right; vertical swipes fall through to
+          the browser via touch-action: pan-y on the wrapper. */}
       <OrbitControls
         enableZoom={false}
         enablePan={false}
@@ -308,84 +330,59 @@ function MobileScene({ issLat, issLon, colors, interactionRef }: MobileSceneProp
   )
 }
 
-// ─── Static SVG fallback (reduced-motion) ────────────────────────────────────
+// ─── Static SVG fallback (reduced-motion) ─────────────────────────────────────
 
-function EarthFallback({ issLat, issLon, colors }: { issLat: number; issLon: number; colors: EarthColors }) {
-  const klX = ((KL_LON_DEG + 180) / 360) * 300
-  const klY = ((90 - KL_LAT_DEG) / 180) * 150
+function EarthFallback({ issLat, issLon }: { issLat: number; issLon: number }) {
+  const klX  = ((KL_LON_DEG + 180) / 360) * 300
+  const klY  = ((90 - KL_LAT_DEG) / 180) * 150
   const issX = ((issLon + 180) / 360) * 300
-  const issY = ((90 - issLat) / 180) * 150
+  const issY = ((90 - issLat)  / 180) * 150
 
   return (
     <div className="flex flex-col items-center gap-2" aria-label="Earth map — static view">
-      <svg
-        width="300" height="150" viewBox="0 0 300 150"
-        aria-hidden="true"
-        style={{ border: '1px solid var(--inert)', borderRadius: 4 }}
-      >
-        <rect width="300" height="150" fill={colors.sphereFill} />
-        {/* Graticule lines */}
+      <svg width="300" height="150" viewBox="0 0 300 150" aria-hidden="true"
+        style={{ border: '1px solid var(--inert)', borderRadius: 4 }}>
+        <rect width="300" height="150" fill="#04060d" />
         {[30, 60, 90, 120, 150, 180, 210, 240, 270, 300].map(x => (
-          <line key={x} x1={x} y1={0} x2={x} y2={150} stroke={colors.wire} strokeWidth="0.5" opacity={colors.wireOpacity} />
+          <line key={x} x1={x} y1={0} x2={x} y2={150} stroke={KL_COLOR} strokeWidth="0.5" opacity={0.3} />
         ))}
         {[37.5, 75, 112.5].map(y => (
-          <line key={y} x1={0} y1={y} x2={300} y2={y} stroke={colors.wire} strokeWidth="0.5" opacity={colors.wireOpacity} />
+          <line key={y} x1={0} y1={y} x2={300} y2={y} stroke={KL_COLOR} strokeWidth="0.5" opacity={0.3} />
         ))}
-        {/* KL marker */}
-        <circle cx={klX} cy={klY} r={4 * colors.markerScale} fill={colors.klMarker} opacity={0.9} />
-        <text x={klX + 6} y={klY + 4} fill={colors.klMarker} fontSize={7} fontFamily="monospace">KL</text>
-        {/* ISS marker */}
-        <rect x={issX - 4 * colors.markerScale} y={issY - 4 * colors.markerScale} width={8 * colors.markerScale} height={8 * colors.markerScale} fill={colors.issMarker} opacity={0.9} />
-        <text x={issX + 6} y={issY + 4} fill={colors.issMarker} fontSize={7} fontFamily="monospace">ISS</text>
+        <circle cx={klX} cy={klY} r={4} fill={KL_COLOR} opacity={0.9} />
+        <text x={klX + 6} y={klY + 4} fill={KL_COLOR} fontSize={7} fontFamily="monospace">KL</text>
+        <rect x={issX - 4} y={issY - 4} width={8} height={8} fill={ISS_COLOR} opacity={0.9} />
+        <text x={issX + 6} y={issY + 4} fill={ISS_COLOR} fontSize={7} fontFamily="monospace">ISS</text>
       </svg>
       <p className="font-mono-display text-[10px]" style={{ color: 'var(--ink-dim)' }}>[STATIC VIEW]</p>
     </div>
   )
 }
 
-// ─── Desktop globe ───────────────────────────────────────────────────────────
+// ─── Desktop globe ────────────────────────────────────────────────────────────
 
-interface SubGlobeProps {
-  issLat: number
-  issLon: number
-  colors: EarthColors
-}
-
-function DesktopEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
-  // -Infinity puts the cooldown gate "infinitely far in the past" → auto-rotate from mount.
+function DesktopEarthGlobe({ issLat, issLon }: { issLat: number; issLon: number }) {
   const interactionRef = useRef<InteractionState>({
     isInteracting: false,
     lastInteractionAt: -Infinity,
   })
-
   return (
-    <div
-      style={{ width: '100%', maxWidth: 420, aspectRatio: '1', minHeight: 320 }}
-      aria-hidden="true"
-    >
+    <div style={{ width: '100%', maxWidth: 420, aspectRatio: '1', minHeight: 320 }} aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
         tabIndex={-1}
       >
-        <Scene issLat={issLat} issLon={issLon} colors={colors} interactionRef={interactionRef} />
+        <Scene issLat={issLat} issLon={issLon} interactionRef={interactionRef} />
       </Canvas>
     </div>
   )
 }
 
-// ─── Mobile globe ────────────────────────────────────────────────────────────
-// Differences from desktop:
-//   • touch-action: pan-y pinch-zoom on wrapper → vertical scroll and pinch
-//     are browser-native; horizontal swipes reach OrbitControls via pointer
-//     events (browser fires pointercancel for vertical gestures, so OrbitControls
-//     only sees the horizontal ones).
-//   • Canvas frameloop toggled by IntersectionObserver → no GPU work when the
-//     hero is off-screen.
-//   • rotateSpeed 0.4 (vs 0.5 desktop) — slightly slower for thumb comfort.
+// ─── Mobile globe ─────────────────────────────────────────────────────────────
 
-function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
+function MobileEarthGlobe({ issLat, issLon }: { issLat: number; issLon: number }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(true)
   const interactionRef = useRef<InteractionState>({
@@ -423,7 +420,7 @@ function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
         frameloop={inView ? 'always' : 'never'}
         tabIndex={-1}
       >
-        <MobileScene issLat={issLat} issLon={issLon} colors={colors} interactionRef={interactionRef} />
+        <MobileScene issLat={issLat} issLon={issLon} interactionRef={interactionRef} />
       </Canvas>
     </div>
   )
@@ -434,14 +431,12 @@ function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
 interface EarthGlobeProps {
   issLat: number
   issLon: number
-  theme: 'dark' | 'light'
   reducedMotion?: boolean
   isMobile?: boolean
 }
 
-export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: EarthGlobeProps) {
-  const colors = earthColors(theme)
-  if (reducedMotion) return <EarthFallback issLat={issLat} issLon={issLon} colors={colors} />
-  if (isMobile)      return <MobileEarthGlobe issLat={issLat} issLon={issLon} colors={colors} />
-  return <DesktopEarthGlobe issLat={issLat} issLon={issLon} colors={colors} />
+export function EarthGlobe({ issLat, issLon, reducedMotion, isMobile }: EarthGlobeProps) {
+  if (reducedMotion) return <EarthFallback issLat={issLat} issLon={issLon} />
+  if (isMobile)      return <MobileEarthGlobe issLat={issLat} issLon={issLon} />
+  return <DesktopEarthGlobe issLat={issLat} issLon={issLon} />
 }
