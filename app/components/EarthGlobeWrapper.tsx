@@ -52,9 +52,11 @@ export function EarthGlobeWrapper() {
 
   useEffect(() => {
     pollISS()
-    const id = setInterval(pollISS, 5000)
+    // 30s on mobile saves cellular bandwidth and avoids waking the WebGL
+    // context every 5s for a marker reposition that's invisible at this scale.
+    const id = setInterval(pollISS, isMobile ? 30000 : 5000)
     return () => clearInterval(id)
-  }, [pollISS])
+  }, [pollISS, isMobile])
 
   return (
     <div

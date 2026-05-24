@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -245,7 +245,49 @@ function Scene({ issLat, issLon, colors, interactionRef }: SceneProps) {
   )
 }
 
-// ─── Static SVG fallback (mobile / reduced-motion) ───────────────────────────
+// ─── Mobile scene (no OrbitControls, no interaction state) ───────────────────
+
+interface MobileSceneProps {
+  issLat: number
+  issLon: number
+  colors: EarthColors
+}
+
+function MobileScene({ issLat, issLon, colors }: MobileSceneProps) {
+  const groupRef = useRef<THREE.Group>(null)
+  const rotationRef = useRef(0)
+  const lastFrameRef = useRef<number | null>(null)
+
+  useFrame(() => {
+    if (!groupRef.current) return
+    const now = performance.now()
+    // Clamp dt — when Canvas frameloop flips back from 'never' (after the hero
+    // scrolls back into view), the first frame's raw dt would otherwise be the
+    // entire off-screen duration, causing a visible rotation jump.
+    const rawDt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
+    const dt = Math.min(rawDt, 0.1)
+    lastFrameRef.current = now
+    rotationRef.current += dt * EARTH_RAD_PER_SEC
+    groupRef.current.rotation.y = rotationRef.current
+  })
+
+  return (
+    <>
+      <ambientLight intensity={0.2} />
+      <group ref={groupRef}>
+        {/* Same EarthMesh as desktop — identical icosahedron detail, texture,
+            and inner sphere. Mobile differences (no OrbitControls, no
+            interaction state, IO-paused frameloop, touch-action wrapper) live
+            outside this component so the globe itself stays in lockstep. */}
+        <EarthMesh colors={colors} />
+        <KLMarker colors={colors} />
+        <ISSMarker lat={issLat} lon={issLon} colors={colors} />
+      </group>
+    </>
+  )
+}
+
+// ─── Static SVG fallback (reduced-motion) ────────────────────────────────────
 
 function EarthFallback({ issLat, issLon, colors }: { issLat: number; issLon: number; colors: EarthColors }) {
   const klX = ((KL_LON_DEG + 180) / 360) * 300
@@ -280,28 +322,20 @@ function EarthFallback({ issLat, issLon, colors }: { issLat: number; issLon: num
   )
 }
 
-// ─── Public component ─────────────────────────────────────────────────────────
+// ─── Desktop globe ───────────────────────────────────────────────────────────
 
-interface EarthGlobeProps {
+interface SubGlobeProps {
   issLat: number
   issLon: number
-  theme: 'dark' | 'light'
-  reducedMotion?: boolean
-  isMobile?: boolean
+  colors: EarthColors
 }
 
-export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: EarthGlobeProps) {
-  const colors = earthColors(theme)
-  // Created here so OrbitControls (in Scene) and EarthMesh share one source of truth.
+function DesktopEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
   // -Infinity puts the cooldown gate "infinitely far in the past" → auto-rotate from mount.
   const interactionRef = useRef<InteractionState>({
     isInteracting: false,
     lastInteractionAt: -Infinity,
   })
-
-  if (reducedMotion || isMobile) {
-    return <EarthFallback issLat={issLat} issLon={issLon} colors={colors} />
-  }
 
   return (
     <div
@@ -318,4 +352,70 @@ export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: E
       </Canvas>
     </div>
   )
+}
+
+// ─── Mobile globe ────────────────────────────────────────────────────────────
+// Differences from desktop:
+//   • touch-action: pan-y on wrapper → vertical scroll always wins over any
+//     touch the canvas might receive. This is the critical bug-fix for the
+//     "scroll dies when finger lands on hero" issue.
+//   • Canvas frameloop toggled by IntersectionObserver → no GPU work when the
+//     hero is off-screen.
+//   • No OrbitControls, no interactionRef, no texture/inner-fill layers.
+
+function MobileEarthGlobe({ issLat, issLon, colors }: SubGlobeProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(true)
+
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={wrapperRef}
+      style={{
+        width: '100%',
+        maxWidth: 280,
+        aspectRatio: '1',
+        maxHeight: 280,
+        touchAction: 'pan-y',
+      }}
+      aria-hidden="true"
+    >
+      <Canvas
+        camera={{ position: [0, 0, 5.5], fov: 45 }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+        style={{ background: 'transparent', pointerEvents: 'none' }}
+        frameloop={inView ? 'always' : 'never'}
+        tabIndex={-1}
+      >
+        <MobileScene issLat={issLat} issLon={issLon} colors={colors} />
+      </Canvas>
+    </div>
+  )
+}
+
+// ─── Public component ─────────────────────────────────────────────────────────
+
+interface EarthGlobeProps {
+  issLat: number
+  issLon: number
+  theme: 'dark' | 'light'
+  reducedMotion?: boolean
+  isMobile?: boolean
+}
+
+export function EarthGlobe({ issLat, issLon, theme, reducedMotion, isMobile }: EarthGlobeProps) {
+  const colors = earthColors(theme)
+  if (reducedMotion) return <EarthFallback issLat={issLat} issLon={issLon} colors={colors} />
+  if (isMobile)      return <MobileEarthGlobe issLat={issLat} issLon={issLon} colors={colors} />
+  return <DesktopEarthGlobe issLat={issLat} issLon={issLon} colors={colors} />
 }
