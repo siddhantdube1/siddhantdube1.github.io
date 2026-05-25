@@ -80,10 +80,17 @@ const EARTH_VERT = /* glsl */ `
 `
 
 // Lighting baked into the fragment shader instead of a separate DirectionalLight,
-// because ShaderMaterial doesn't read Three's light uniforms. NdotL drives both
-// the directional falloff (0.95 coefficient) and the small ambient floor (0.05).
-// The smoothstep band ±0.10 spans ~11° of N·L either side of the terminator
-// great circle — the twilight zone where day and night textures cross-fade.
+// because ShaderMaterial doesn't read Three's light uniforms.
+//   • Day side uses half-Lambert (0.5 + 0.5·NdotL): the lit hemisphere stays
+//     photo-bright across most of its area and only dims near the terminator.
+//     Pure Lambert × sRGB→linear texture math made continents and oceans go
+//     near-black at moderate sun angles — only polar snow stayed visible.
+//   • Night side gets the night texture (city lights) plus a 0.05 ambient
+//     applied as `day * 0.05`, so continent outlines stay faintly visible in
+//     their natural colors (atmospheric scattering + reflected starlight, in
+//     physical terms; spec calls for "very faint visibility" on the night side).
+//   • smoothstep band ±0.10 spans ~11° of N·L either side of the terminator
+//     great circle — the twilight zone where day and night textures cross-fade.
 const EARTH_FRAG = /* glsl */ `
   varying vec3 vNormalLocal;
   varying vec2 vUv;
@@ -96,9 +103,10 @@ const EARTH_FRAG = /* glsl */ `
     float dayBlend = smoothstep(-0.10, 0.10, NdotL);
     vec3 day   = texture2D(uDayTexture,   vUv).rgb;
     vec3 night = texture2D(uNightTexture, vUv).rgb;
-    // 0.05 ambient + Lambertian sun term
-    vec3 dayLit = day * (0.05 + 0.95 * max(NdotL, 0.0));
-    vec3 color  = mix(night, dayLit, dayBlend);
+    float dayIntensity = 0.5 + 0.5 * max(NdotL, 0.0);
+    vec3 dayLit   = day * dayIntensity;
+    vec3 nightLit = night + day * 0.05;
+    vec3 color    = mix(nightLit, dayLit, dayBlend);
     gl_FragColor = vec4(color, 1.0);
   }
 `
@@ -237,6 +245,22 @@ function Scene({ issLat, issLon, interactionRef }: SceneProps) {
   useFrame(() => {
     if (!groupRef.current) return
     const now = performance.now()
+
+    // First frame: orient the day side toward the camera. The shader runs in
+    // body-fixed coords, so this only changes which side of the globe faces
+    // the viewer — geography is preserved. Without it, the camera at +z often
+    // lands on the night hemisphere (depending on the current subsolar lon),
+    // and at high declination most of the visible disk is in shadow except
+    // the polar cap. Group rotation and sun body-frame motion both run at
+    // sidereal rate but in opposite directions, so this initial alignment
+    // persists for the session: the day side stays roughly camera-facing
+    // while the surface scrolls under it.
+    if (lastFrameRef.current === null) {
+      const sunDir = new THREE.Vector3()
+      computeSunDirection(new Date(), sunDir)
+      rotationRef.current = Math.atan2(-sunDir.x, sunDir.z)
+    }
+
     const dt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
     lastFrameRef.current = now
 
@@ -284,9 +308,16 @@ function MobileScene({ issLat, issLon, interactionRef }: SceneProps) {
   useFrame(() => {
     if (!groupRef.current) return
     const now = performance.now()
-    // Clamp dt — when Canvas frameloop flips back from 'never' after the hero
-    // scrolls into view, the first frame's raw dt would otherwise be the entire
-    // off-screen duration, causing a visible rotation jump.
+
+    // See Scene for why we align here. Mobile uses the same logic; the dt
+    // clamp below remains because frameloop can resume from 'never' after the
+    // hero scrolls back into view.
+    if (lastFrameRef.current === null) {
+      const sunDir = new THREE.Vector3()
+      computeSunDirection(new Date(), sunDir)
+      rotationRef.current = Math.atan2(-sunDir.x, sunDir.z)
+    }
+
     const rawDt = lastFrameRef.current == null ? 0 : (now - lastFrameRef.current) / 1000
     const dt = Math.min(rawDt, 0.1)
     lastFrameRef.current = now
