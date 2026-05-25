@@ -81,16 +81,17 @@ const EARTH_VERT = /* glsl */ `
 
 // Lighting baked into the fragment shader instead of a separate DirectionalLight,
 // because ShaderMaterial doesn't read Three's light uniforms.
-//   • Day side uses half-Lambert (0.5 + 0.5·NdotL): the lit hemisphere stays
-//     photo-bright across most of its area and only dims near the terminator.
-//     Pure Lambert × sRGB→linear texture math made continents and oceans go
-//     near-black at moderate sun angles — only polar snow stayed visible.
+//   • Day side uses half-Lambert (0.5 + 0.5·NdotL) × 1.1: the lit hemisphere
+//     stays photo-bright across most of its area and only dims near the
+//     terminator. The 1.1 multiplier nudges sub-solar pixels just past the
+//     texture's native value so Saharan sand and Pacific blue read as vivid
+//     rather than muted; capped at 1.1 to keep clouds from blowing out.
 //   • Night side gets the night texture (city lights) plus a 0.05 ambient
 //     applied as `day * 0.05`, so continent outlines stay faintly visible in
 //     their natural colors (atmospheric scattering + reflected starlight, in
 //     physical terms; spec calls for "very faint visibility" on the night side).
-//   • smoothstep band ±0.10 spans ~11° of N·L either side of the terminator
-//     great circle — the twilight zone where day and night textures cross-fade.
+//   • smoothstep band ±0.05 — ~5.7° total — gives a crisp "satellite photo"
+//     terminator. Widen toward ±0.10 if a softer atmospheric feel is wanted.
 const EARTH_FRAG = /* glsl */ `
   varying vec3 vNormalLocal;
   varying vec2 vUv;
@@ -100,10 +101,10 @@ const EARTH_FRAG = /* glsl */ `
   void main() {
     vec3 N = normalize(vNormalLocal);
     float NdotL = dot(N, uSunDirection);
-    float dayBlend = smoothstep(-0.10, 0.10, NdotL);
+    float dayBlend = smoothstep(-0.05, 0.05, NdotL);
     vec3 day   = texture2D(uDayTexture,   vUv).rgb;
     vec3 night = texture2D(uNightTexture, vUv).rgb;
-    float dayIntensity = 0.5 + 0.5 * max(NdotL, 0.0);
+    float dayIntensity = (0.5 + 0.5 * max(NdotL, 0.0)) * 1.1;
     vec3 dayLit   = day * dayIntensity;
     vec3 nightLit = night + day * 0.05;
     vec3 color    = mix(nightLit, dayLit, dayBlend);
