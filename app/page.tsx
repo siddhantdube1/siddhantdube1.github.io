@@ -502,12 +502,12 @@ export default function Portfolio() {
                 <p className="font-mono-display text-xs tracking-widest mb-3" style={{ color: 'var(--instrument)' }}>CARGO MANIFEST — entry SD-01</p>
                 <div className="space-y-4 leading-relaxed" style={{ color: 'var(--ink)' }}>
                   <p>
-                    I&apos;m a PhD researcher in socio-technical AI, exploring how Graph Neural Networks,
+                    I&apos;m a PhD researcher at Monash University specializing in legal AI, exploring how Graph Neural Networks,
                     Large Language Models, and neuro-symbolic architectures can transform legal reasoning
                     and decision-making while considering their broader societal impacts and human-centered design.
                   </p>
                   <p>
-                    Before this, I spent ~4.5 years building production ML systems — most recently as a
+                    Before this, I spent ~4.5 years building production ML systems, most recently as a
                     Senior ML Engineer at CVS Health, before that at Ikigai Labs, Squark, and an
                     MIT-backed startup called Empallo. M.S. from Northeastern, B.Eng. from Monash.
                   </p>
