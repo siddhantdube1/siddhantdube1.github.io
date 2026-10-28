@@ -226,7 +226,7 @@ const MISSIONS = [
   {
     id: 'M-05',
     status: 'ACTIVE' as const,
-    title: 'PhD Research — Socio-Technical Legal AI',
+    title: 'PhD Research — AI Safety and Alignment in Legal Tech',
     host: 'Monash University',
     sector: 'Kuala Lumpur, MY',
     window: '2026-09 / —',
