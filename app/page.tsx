@@ -229,9 +229,9 @@ const MISSIONS = [
     title: 'PhD Research — Socio-Technical Legal AI',
     host: 'Monash University',
     sector: 'Kuala Lumpur, MY',
-    window: '2026-01 / —',
+    window: '2026-09 / —',
     notes: [
-      'Investigating how Graph Neural Networks, Large Language Models, and neuro-symbolic architectures can enhance legal reasoning while considering socio-technical dimensions and human-centered design principles',
+      'Exploring how training, feedback, and iterative improvement affect the alignment and behaviour of AI systems in legal applications, with research interests in bias, sycophancy, and deception.',
     ],
   },
   {
@@ -240,7 +240,7 @@ const MISSIONS = [
     title: 'Senior Machine Learning Engineer',
     host: 'CVS Health',
     sector: 'Cambridge, MA',
-    window: '2024-09 / 2026-01',
+    window: '2024-09 / 2025-09',
     notes: [
       'Delivered real-time recommendations under 200ms with FastAPI microservice integrating geospatial queries and vector embeddings from MongoDB',
       'Reduced model explainability computation by 8x using GPU-enabled DataProc clusters and parallel SHAP processing',
@@ -502,9 +502,10 @@ export default function Portfolio() {
                 <p className="font-mono-display text-xs tracking-widest mb-3" style={{ color: 'var(--instrument)' }}>CARGO MANIFEST — entry SD-01</p>
                 <div className="space-y-4 leading-relaxed" style={{ color: 'var(--ink)' }}>
                   <p>
-                    I&apos;m a PhD researcher at Monash University specializing in legal AI, exploring how Graph Neural Networks,
-                    Large Language Models, and neuro-symbolic architectures can transform legal reasoning
-                    and decision-making while considering their broader societal impacts and human-centered design.
+                    I&apos;m a PhD researcher at Monash University exploring AI safety in legal
+                    reasoning and decision-making. My research interests include model alignment,
+                    bias, sycophancy, and deception, with a particular focus on how training,
+                    feedback, and iterative improvement shape AI behaviour in legal applications.
                   </p>
                   <p>
                     Before this, I spent ~4.5 years building production ML systems, most recently as a
